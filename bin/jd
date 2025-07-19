@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# jotDown CLI wrapper script
+# This script provides a convenient way to run the jotDown CLI
+
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+
+# Check if Dart is available
+if ! command -v dart &> /dev/null; then
+    echo "Error: Dart SDK not found. Please install Dart first."
+    exit 1
+fi
+
+# Check if the jotdown.dart file exists
+if [[ ! -f "$PROJECT_DIR/bin/jotdown.dart" ]]; then
+    echo "Error: jotdown.dart not found at $PROJECT_DIR/bin/jotdown.dart"
+    exit 1
+fi
+
+# Run the Dart CLI application
+dart "$PROJECT_DIR/bin/jotdown.dart" "$@"
