@@ -5,7 +5,7 @@
   
   **Simple and elegant notes application for Linux**
   
-  [![Release](https://img.shields.io/github/v/release/your-username/jotdown)](https://github.com/your-username/jotdown/releases)
+  [![Release](https://img.shields.io/github/v/release/timappledotcom/jotdown)](https://github.com/timappledotcom/jotdown/releases)
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
   [![Flutter](https://img.shields.io/badge/Flutter-3.24+-blue.svg)](https://flutter.dev/)
   [![Platform](https://img.shields.io/badge/Platform-Linux-orange.svg)](https://www.linux.org/)
@@ -51,24 +51,24 @@ jotDown is a beautiful, feature-rich notes application for Linux that combines t
 
 ### Download Pre-built Packages
 
-Choose your preferred package format from our [releases page](https://github.com/your-username/jotdown/releases):
+Choose your preferred package format from our [releases page](https://github.com/timappledotcom/jotdown/releases):
 
 #### DEB Package (Ubuntu/Debian)
 ```bash
-wget https://github.com/your-username/jotdown/releases/download/v0.1.0/jotdown-0.1.0-linux-amd64.deb
+wget https://github.com/timappledotcom/jotdown/releases/download/v0.1.0/jotdown-0.1.0-linux-amd64.deb
 sudo dpkg -i jotdown-0.1.0-linux-amd64.deb
 sudo apt-get install -f  # Fix dependencies if needed
 ```
 
 #### RPM Package (Fedora/RHEL/openSUSE)
 ```bash
-wget https://github.com/your-username/jotdown/releases/download/v0.1.0/jotdown-0.1.0-linux-amd64.rpm
+wget https://github.com/timappledotcom/jotdown/releases/download/v0.1.0/jotdown-0.1.0-linux-amd64.rpm
 sudo rpm -i jotdown-0.1.0-linux-amd64.rpm
 ```
 
 #### AppImage (Universal)
 ```bash
-wget https://github.com/your-username/jotdown/releases/download/v0.1.0/jotdown-0.1.0-linux-x86_64.AppImage
+wget https://github.com/timappledotcom/jotdown/releases/download/v0.1.0/jotdown-0.1.0-linux-x86_64.AppImage
 chmod +x jotdown-0.1.0-linux-x86_64.AppImage
 ./jotdown-0.1.0-linux-x86_64.AppImage
 ```
@@ -85,7 +85,7 @@ chmod +x jotdown-0.1.0-linux-x86_64.AppImage
 sudo apt-get install libgtk-3-dev libx11-dev pkg-config cmake ninja-build libblkid-dev libsecret-1-dev
 
 # Clone the repository
-git clone https://github.com/your-username/jotdown.git
+git clone https://github.com/timappledotcom/jotdown.git
 cd jotdown
 
 # Get Flutter dependencies
@@ -191,8 +191,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📮 Support
 
-- **Issues**: [GitHub Issues](https://github.com/your-username/jotdown/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/your-username/jotdown/discussions)
+- **Issues**: [GitHub Issues](https://github.com/timappledotcom/jotdown/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/timappledotcom/jotdown/discussions)
 
 ---
 
