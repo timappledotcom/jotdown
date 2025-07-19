@@ -104,7 +104,7 @@ class _JotDownAppState extends State<JotDownApp> {
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
       ),
-      cardTheme: CardThemeData(elevation: 2, color: Colors.grey[50]),
+      cardTheme: const CardThemeData(elevation: 2, color: Color(0xFFFAFAFA)),
     );
   }
 
@@ -126,7 +126,7 @@ class _JotDownAppState extends State<JotDownApp> {
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
       ),
-      cardTheme: CardThemeData(elevation: 2, color: Colors.grey[800]),
+      cardTheme: const CardThemeData(elevation: 2, color: Color(0xFF424242)),
       scaffoldBackgroundColor: Colors.grey[900],
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
