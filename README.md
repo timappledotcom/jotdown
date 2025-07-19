@@ -55,22 +55,22 @@ Choose your preferred package format from our [releases page](https://github.com
 
 #### DEB Package (Ubuntu/Debian)
 ```bash
-wget https://github.com/timappledotcom/jotdown/releases/download/v0.1.0/jotdown-0.1.0-linux-amd64.deb
-sudo dpkg -i jotdown-0.1.0-linux-amd64.deb
+wget https://github.com/timappledotcom/jotdown/releases/download/v0.1.1/jotdown-0.1.1-linux-amd64.deb
+sudo dpkg -i jotdown-0.1.1-linux-amd64.deb
 sudo apt-get install -f  # Fix dependencies if needed
 ```
 
 #### RPM Package (Fedora/RHEL/openSUSE)
 ```bash
-wget https://github.com/timappledotcom/jotdown/releases/download/v0.1.0/jotdown-0.1.0-linux-amd64.rpm
-sudo rpm -i jotdown-0.1.0-linux-amd64.rpm
+wget https://github.com/timappledotcom/jotdown/releases/download/v0.1.1/jotdown-0.1.1-linux-amd64.rpm
+sudo rpm -i jotdown-0.1.1-linux-amd64.rpm
 ```
 
 #### AppImage (Universal)
 ```bash
-wget https://github.com/timappledotcom/jotdown/releases/download/v0.1.0/jotdown-0.1.0-linux-x86_64.AppImage
-chmod +x jotdown-0.1.0-linux-x86_64.AppImage
-./jotdown-0.1.0-linux-x86_64.AppImage
+wget https://github.com/timappledotcom/jotdown/releases/download/v0.1.1/jotdown-0.1.1-linux-x86_64.AppImage
+chmod +x jotdown-0.1.1-linux-x86_64.AppImage
+./jotdown-0.1.1-linux-x86_64.AppImage
 ```
 
 ### Build from Source

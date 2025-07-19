@@ -67,7 +67,7 @@ jobs:
         # Create control file
         cat > debian/jotdown/DEBIAN/control << EOF
         Package: jotdown
-        Version: 0.1.0
+        Version: 0.1.1
         Section: utils
         Priority: optional
         Architecture: amd64
@@ -80,12 +80,12 @@ jobs:
         
         # Build DEB
         dpkg-deb --build debian/jotdown
-        mv debian/jotdown.deb jotdown-0.1.0-linux-amd64.deb
+        mv debian/jotdown.deb jotdown-0.1.1-linux-amd64.deb
     
     - name: Create RPM package
       run: |
-        sudo alien --to-rpm --scripts jotdown-0.1.0-linux-amd64.deb
-        mv jotdown-0.1.0-2.x86_64.rpm jotdown-0.1.0-linux-amd64.rpm
+        sudo alien --to-rpm --scripts jotdown-0.1.1-linux-amd64.deb
+        mv jotdown-0.1.1-2.x86_64.rpm jotdown-0.1.1-linux-amd64.rpm
     
     - name: Create AppImage
       run: |
@@ -112,16 +112,16 @@ jobs:
         chmod +x AppDir/AppRun
         
         # Build AppImage
-        appimagetool AppDir jotdown-0.1.0-linux-x86_64.AppImage
+        appimagetool AppDir jotdown-0.1.1-linux-x86_64.AppImage
     
     - name: Upload Release Assets
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
       with:
         files: |
-          jotdown-0.1.0-linux-amd64.deb
-          jotdown-0.1.0-linux-amd64.rpm
-          jotdown-0.1.0-linux-x86_64.AppImage
+          jotdown-0.1.1-linux-amd64.deb
+          jotdown-0.1.1-linux-amd64.rpm
+          jotdown-0.1.1-linux-x86_64.AppImage
         draft: false
         prerelease: false
       env:

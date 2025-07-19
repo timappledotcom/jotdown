@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2025-07-19
+
+### Fixed
+- **GitHub Actions Compatibility**: Fixed CI build failure by adjusting Dart SDK requirement from ^3.8.1 to ^3.5.0
+- **Automated Packaging**: Ensured DEB, RPM, and AppImage packages can be built successfully in CI environment
+- **Flutter Version**: Updated workflow to use stable Flutter 3.24.0 for reliable builds
+
+### Technical
+- Maintained full backward compatibility with all existing features
+- No functional changes - purely technical fixes for CI/CD pipeline
+
 ## [0.1.0] - 2025-07-19
 
 ### Added
