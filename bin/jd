@@ -3,21 +3,32 @@
 # jotDown CLI wrapper script
 # This script provides a convenient way to run the jotDown CLI
 
-# Get the directory where this script is located
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Get the directory where this script is actually located (resolve symlinks)
+SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 
-# Check if Dart is available
-if ! command -v dart &> /dev/null; then
-    echo "Error: Dart SDK not found. Please install Dart first."
-    exit 1
+# Check if we have a native CLI executable (preferred)
+if [[ -f "$PROJECT_DIR/jotdown-cli" ]]; then
+    exec "$PROJECT_DIR/jotdown-cli" "$@"
 fi
 
-# Check if the jotdown.dart file exists
-if [[ ! -f "$PROJECT_DIR/bin/jotdown.dart" ]]; then
-    echo "Error: jotdown.dart not found at $PROJECT_DIR/bin/jotdown.dart"
-    exit 1
+# Check if we have the CLI in the bin directory
+if [[ -f "$PROJECT_DIR/bin/jotdown-cli" ]]; then
+    exec "$PROJECT_DIR/bin/jotdown-cli" "$@"
 fi
 
-# Run the Dart CLI application
-dart "$PROJECT_DIR/bin/jotdown.dart" "$@"
+# Fallback to Dart CLI if in development environment
+if command -v dart &> /dev/null && [[ -f "$PROJECT_DIR/bin/jotdown.dart" ]]; then
+    # Check if we have pubspec.yaml (development environment)
+    if [[ -f "$PROJECT_DIR/pubspec.yaml" ]]; then
+        cd "$PROJECT_DIR" && exec dart bin/jotdown.dart "$@"
+    fi
+fi
+
+echo "Error: jotDown CLI not found."
+echo "Looked for:"
+echo "  - $PROJECT_DIR/jotdown-cli (native CLI executable)"
+echo "  - $PROJECT_DIR/bin/jotdown-cli (native CLI executable)"
+echo "  - $PROJECT_DIR/bin/jotdown.dart (Dart CLI in dev environment)"
+exit 1
