@@ -224,13 +224,10 @@ Exciting features coming to jotDown:
 ### 🔒 Enhanced Security
 - **Hardware Key Support**: Integration with security keys for authentication  
 - **Biometric Authentication**: Fingerprint/face unlock support on supported devices
-- **Secure Vault Mode**: Isolated encrypted containers for ultra-sensitive notes
 
 ### 📊 Advanced Features
 - **Rich Media Support**: Enhanced image, audio, and file attachment handling
-- **Collaborative Editing**: Real-time collaborative editing capabilities
 - **Advanced Search**: Full-text search with filters, tags, and smart suggestions
-- **Plugin System**: Extensible architecture for community plugins
 
 > 💡 Have ideas for other features? [Share them in our discussions](https://github.com/timappledotcom/jotdown/discussions)!
 
