@@ -6,7 +6,7 @@
 - **Help Button**: Added help (❓) icon to the app bar for easy access
 - **Interactive Help Dialog**: Detailed, organized help covering all features:
   - Creating and editing notes with Markdown
-  - Using hashtag tags (#tagname) with examples  
+  - Using hashtag tags (#tagname) with examples
   - Searching and filtering capabilities
   - Command-line interface integration
   - Settings and encryption features
@@ -43,7 +43,7 @@
 All three package formats have been updated:
 
 - **DEB Package** (`jotdown-v0.1.4-amd64.deb`): 21 MB
-- **TAR.XZ Archive** (`jotdown-v0.1.4-linux-x64.tar.xz`): 19 MB  
+- **TAR.XZ Archive** (`jotdown-v0.1.4-linux-x64.tar.xz`): 19 MB
 - **AppImage** (`jotdown-v0.1.4-linux-x86_64.AppImage`): 26 MB
 
 ## 🚀 Installation
@@ -100,7 +100,7 @@ Your notes and settings will be preserved during the upgrade.
 ## 🔄 What's Preserved
 
 - All your existing notes and tags
-- Current settings and preferences  
+- Current settings and preferences
 - Storage location configuration
 - Encryption passwords (if used)
 
@@ -108,7 +108,7 @@ Your notes and settings will be preserved during the upgrade.
 
 All components now use version 0.1.4:
 - Flutter GUI application: v0.1.4
-- Dart CLI tool: v0.1.4  
+- Dart CLI tool: v0.1.4
 - Package metadata: v0.1.4
 - Installation scripts: v0.1.4
 
