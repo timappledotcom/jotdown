@@ -57,26 +57,37 @@ jotDown is a beautiful, feature-rich notes application for Linux that combines t
 
 Choose the package format that works best for your Linux distribution:
 
-#### DEB Package (Debian/Ubuntu)
+#### DEB Package (Debian/Ubuntu) - 20.8 MB
 ```bash
-wget https://github.com/timappledotcom/jotdown/releases/download/v0.1.2/jotdown-0.1.2-linux-amd64.deb
-sudo dpkg -i jotdown-0.1.2-linux-amd64.deb
+wget https://github.com/timappledotcom/jotdown/releases/download/v0.1.6/jotdown-v0.1.6-amd64.deb
+sudo dpkg -i jotdown-v0.1.6-amd64.deb
 ```
 
-#### RPM Package (Red Hat/Fedora/SUSE)
+#### RPM Package (Red Hat/Fedora/SUSE) - 25.8 MB
 ```bash
-wget https://github.com/timappledotcom/jotdown/releases/download/v0.1.2/jotdown-0.1.2-linux-amd64.rpm
-sudo rpm -i jotdown-0.1.2-linux-amd64.rpm
+wget https://github.com/timappledotcom/jotdown/releases/download/v0.1.6/jotdown-v0.1.6-x86_64.rpm
+sudo rpm -i jotdown-v0.1.6-x86_64.rpm
+# Or with dnf/yum:
+sudo dnf install jotdown-v0.1.6-x86_64.rpm
 ```
 
-#### AppImage (Universal)
+#### AppImage (Universal) - 22.9 MB
 ```bash
-wget https://github.com/timappledotcom/jotdown/releases/download/v0.1.2/jotdown-0.1.2-linux-x86_64.AppImage
-chmod +x jotdown-0.1.2-linux-x86_64.AppImage
-./jotdown-0.1.2-linux-x86_64.AppImage
+wget https://github.com/timappledotcom/jotdown/releases/download/v0.1.6/JotDown-v0.1.6-x86_64.AppImage
+chmod +x JotDown-v0.1.6-x86_64.AppImage
+./JotDown-v0.1.6-x86_64.AppImage
 ```
 
-> 📦 **Latest Release**: v0.1.2 - [View all releases](https://github.com/timappledotcom/jotdown/releases)
+#### Portable Archive (TAR.XZ) - 15.9 MB
+```bash
+wget https://github.com/timappledotcom/jotdown/releases/download/v0.1.6/jotdown-v0.1.6-linux-x64.tar.xz
+tar -xf jotdown-v0.1.6-linux-x64.tar.xz
+cd jotdown-v0.1.6-linux-x64
+./install.sh  # Optional: install system-wide
+# Or run directly: ./jotdown
+```
+
+> 📦 **Latest Release**: v0.1.6 - [View all releases](https://github.com/timappledotcom/jotdown/releases)
 
 ### Setting up CLI Command
 
@@ -91,13 +102,13 @@ sudo ./bin/setup-jd.sh
 
 **Alternative Methods:**
 ```bash
-```bash
-wget https://github.com/timappledotcom/jotdown/releases/download/v0.1.2/setup-cli.sh
+wget https://github.com/timappledotcom/jotdown/releases/download/v0.1.6/setup-cli.sh
 chmod +x setup-cli.sh
 sudo ./setup-cli.sh
 ```
 
-# Or create symlink manually
+Or create symlink manually:
+```bash
 sudo ln -s /opt/jotdown/bin/jd /usr/local/bin/jd
 jd --help
 ```
