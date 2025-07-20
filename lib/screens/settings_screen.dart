@@ -60,12 +60,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
 
-      if (selectedDirectory != null) {
-        setState(() {
-          _customPathController.text = selectedDirectory;
-          _settings = _settings.copyWith(customPath: selectedDirectory);
-        });
-      }
+      setState(() {
+        _customPathController.text = selectedDirectory ?? '';
+        _settings = _settings.copyWith(customPath: selectedDirectory);
+      });
     } catch (e) {
       ScaffoldMessenger.of(
         context,
@@ -435,7 +433,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         final passwordSaltFile = File('$filePath/password.salt');
         await passwordSaltFile.parent.create(recursive: true);
         await passwordSaltFile.writeAsString(passwordData['salt']!);
-        
+
         // Also ensure encryption salt file uses the same salt
         final encryptionSaltFile = File('$filePath/notes.json.salt');
         await encryptionSaltFile.writeAsString(passwordData['salt']!);
@@ -558,7 +556,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         final filePath = await _getLocationPath(_settings.storageLocation);
         final passwordSaltFile = File('$filePath/password.salt');
         await passwordSaltFile.writeAsString(passwordData['newSalt']!);
-        
+
         // Also update encryption salt file
         final encryptionSaltFile = File('$filePath/notes.json.salt');
         await encryptionSaltFile.writeAsString(passwordData['newSalt']!);
@@ -597,8 +595,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (_settings.storageLocation == 'shared_preferences') {
       final prefs = await SharedPreferences.getInstance();
       // First try to get password salt, fallback to encryption salt
-      return prefs.getString('password_salt') ?? 
-             prefs.getString('encryption_salt') ?? '';
+      return prefs.getString('password_salt') ??
+          prefs.getString('encryption_salt') ??
+          '';
     } else {
       final filePath = await _getLocationPath(_settings.storageLocation);
       // First try password salt file, then encryption salt file
@@ -606,7 +605,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (await passwordSaltFile.exists()) {
         return await passwordSaltFile.readAsString();
       }
-      
+
       final saltFile = File('$filePath/notes.json.salt');
       if (await saltFile.exists()) {
         return await saltFile.readAsString();

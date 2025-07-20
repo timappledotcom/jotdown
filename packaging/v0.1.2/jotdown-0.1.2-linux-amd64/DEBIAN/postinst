@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# Post-installation script for jotDown v0.1.2
+# This script sets up the jd CLI command globally
+
+echo "Setting up jotDown CLI..."
+
+# Check if the installation directory exists
+INSTALL_DIR="/opt/jotdown"
+if [ -d "$INSTALL_DIR" ] && [ -f "$INSTALL_DIR/bin/jd" ]; then
+    # Make sure jd script is executable
+    chmod +x "$INSTALL_DIR/bin/jd"
+
+    # Create symlink in /usr/local/bin if it doesn't exist
+    if [ ! -L "/usr/local/bin/jd" ]; then
+        ln -sf "$INSTALL_DIR/bin/jd" "/usr/local/bin/jd" 2>/dev/null || true
+    fi
+
+    echo "jotDown installed successfully!"
+    echo "Use 'jd --help' to get started with the CLI"
+else
+    echo "Warning: jotDown installation directory not found"
+fi
+
+exit 0

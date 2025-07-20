@@ -1,0 +1,12 @@
+Package: jotdown
+Version: 0.1.2
+Section: utils
+Priority: optional
+Architecture: amd64
+Depends: libc6, libgtk-3-0, libglib2.0-0
+Maintainer: Tim Apple <tim@example.com>
+Description: A simple, secure note-taking application
+ jotDown is a modern note-taking application with encryption,
+ search capabilities, and both desktop and command-line interfaces.
+ Features include markdown support, theme customization, and
+ secure password-based encryption for sensitive notes.
