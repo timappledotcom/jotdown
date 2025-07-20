@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=jotDown
+Comment=Simple and elegant notes application with Markdown support
+Exec=jotdown
+Icon=jotdown
+Terminal=false
+StartupNotify=true
+Categories=Office;Utility;TextEditor;
+Keywords=notes;markdown;text;editor;memo;
+MimeType=text/markdown;text/plain;
+StartupWMClass=jotdown

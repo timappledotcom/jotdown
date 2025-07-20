@@ -7,13 +7,14 @@ part of 'app_settings.dart';
 // **************************************************************************
 
 AppSettings _$AppSettingsFromJson(Map<String, dynamic> json) => AppSettings(
-  storageLocation: json['storageLocation'] as String? ?? 'shared_preferences',
-  useCustomLocation: json['useCustomLocation'] as bool? ?? false,
-  customPath: json['customPath'] as String? ?? '',
-  themeMode: json['themeMode'] as String? ?? 'system',
-  encryptionEnabled: json['encryptionEnabled'] as bool? ?? false,
-  passwordHash: json['passwordHash'] as String?,
-);
+      storageLocation:
+          json['storageLocation'] as String? ?? 'shared_preferences',
+      useCustomLocation: json['useCustomLocation'] as bool? ?? false,
+      customPath: json['customPath'] as String? ?? '',
+      themeMode: json['themeMode'] as String? ?? 'system',
+      encryptionEnabled: json['encryptionEnabled'] as bool? ?? false,
+      passwordHash: json['passwordHash'] as String?,
+    );
 
 Map<String, dynamic> _$AppSettingsToJson(AppSettings instance) =>
     <String, dynamic>{

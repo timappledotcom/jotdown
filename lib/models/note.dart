@@ -18,6 +18,21 @@ class Note {
     required this.updatedAt,
   });
 
+  /// Extracts tags from the note content (words starting with #)
+  List<String> get tags {
+    final tagRegex = RegExp(r'#(\w+)');
+    final matches = tagRegex.allMatches(content);
+    return matches
+        .map((match) => match.group(1)!.toLowerCase())
+        .toSet()
+        .toList();
+  }
+
+  /// Returns true if this note contains the specified tag
+  bool hasTag(String tag) {
+    return tags.contains(tag.toLowerCase());
+  }
+
   Note copyWith({
     String? id,
     String? title,

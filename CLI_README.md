@@ -17,7 +17,7 @@ sudo ./bin/setup-jd.sh
 
 #### Download Setup Script
 ```bash
-wget https://github.com/timappledotcom/jotdown/releases/download/v0.1.2/setup-cli.sh
+wget https://github.com/timappledotcom/jotdown/releases/download/v0.1.3/setup-cli.sh
 chmod +x setup-cli.sh
 sudo ./setup-cli.sh
 ```
@@ -93,7 +93,16 @@ jd delete --id NOTE_ID --force
 
 #### Search notes
 ```bash
+# Search by content
 jd search -q "search term"
+
+# Search by tag
+jd search --tag tagname
+```
+
+#### List tags
+```bash
+jd tags
 ```
 
 ### Settings Management
@@ -180,6 +189,20 @@ jd add -t "Meeting Notes" --editor
 ```bash
 jd search -q "meeting"
 jd search -q "TODO"
+jd search --tag work
+jd search --tag project
+```
+
+### Using tags in notes
+```bash
+# Add a note with tags
+jd add -t "Project Meeting" -c "Discussed #planning and #development tasks for #project-alpha"
+
+# List all available tags
+jd tags
+
+# Search for notes with specific tags
+jd search --tag planning
 ```
 
 ### Backing up notes to a custom location
@@ -196,7 +219,14 @@ jd settings --storage custom --custom-path ~/Dropbox/Notes
 
 ## Tips
 
-1. **Pipe content**: Use pipes and redirection with the CLI
+1. **Tags**: Use #hashtags in note content to organize and categorize notes
+   ```bash
+   jd add -t "Work Notes" -c "Meeting about #planning and #budget for Q2"
+   jd tags  # List all available tags
+   jd search --tag planning  # Find all planning-related notes
+   ```
+
+2. **Pipe content**: Use pipes and redirection with the CLI
    ```bash
    echo "Meeting agenda" | jd add -t "Meeting" -c -
    ```

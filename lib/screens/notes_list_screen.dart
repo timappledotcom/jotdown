@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
+import 'dart:async';
 import '../models/note.dart';
 import '../models/app_settings.dart';
 import '../services/notes_service.dart';
@@ -19,18 +20,136 @@ class NotesListScreen extends StatefulWidget {
   State<NotesListScreen> createState() => _NotesListScreenState();
 }
 
-class _NotesListScreenState extends State<NotesListScreen> {
+class _NotesListScreenState extends State<NotesListScreen>
+    with WidgetsBindingObserver {
   final NotesService _notesService = NotesService();
   final SettingsService _settingsService = SettingsService();
   List<Note> _notes = [];
   AppSettings _settings = AppSettings();
   bool _isLoading = true;
   String _searchQuery = '';
+  String? _selectedTag;
+  Timer? _refreshTimer;
+  DateTime? _lastModified;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadSettingsAndNotes();
+    _startAutoRefresh();
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // Refresh when app regains focus
+    if (state == AppLifecycleState.resumed) {
+      _refreshNotes();
+    }
+  }
+
+  void _startAutoRefresh() {
+    // Check for changes every 3 seconds
+    _refreshTimer = Timer.periodic(const Duration(seconds: 3), (_) {
+      _checkForChanges();
+    });
+  }
+
+  Future<void> _checkForChanges() async {
+    try {
+      DateTime? currentModified;
+
+      if (_settings.storageLocation == 'shared_preferences') {
+        // Check SharedPreferences file modification time
+        final homeDir = Platform.environment['HOME'] ?? '';
+        final spFile = File(
+            '$homeDir/.local/share/com.example.jotdown/shared_preferences.json');
+
+        if (await spFile.exists()) {
+          final stat = await spFile.stat();
+          currentModified = stat.modified;
+        }
+      } else {
+        // Check notes file modification time for other storage types
+        final notesFile = await _getNotesFile();
+        if (await notesFile.exists()) {
+          final stat = await notesFile.stat();
+          currentModified = stat.modified;
+        }
+      }
+
+      // If file was modified since last check, refresh notes
+      if (currentModified != null &&
+          (_lastModified == null || currentModified.isAfter(_lastModified!))) {
+        _lastModified = currentModified;
+        if (mounted) {
+          _refreshNotes();
+        }
+      } else if (_lastModified == null && currentModified != null) {
+        _lastModified = currentModified;
+      }
+    } catch (e) {
+      // Ignore errors in background checking
+    }
+  }
+
+  Future<File> _getNotesFile() async {
+    String filePath;
+    switch (_settings.storageLocation) {
+      case 'documents':
+        final documentsDir = await getApplicationDocumentsDirectory();
+        filePath = '${documentsDir.path}/jotDown/notes.json';
+        break;
+      case 'home':
+        final homeDir = Platform.environment['HOME'] ?? '';
+        filePath = '$homeDir/jotDown/notes.json';
+        break;
+      case 'custom':
+        filePath = '${_settings.customPath}/notes.json';
+        break;
+      default:
+        final documentsDir = await getApplicationDocumentsDirectory();
+        filePath = '${documentsDir.path}/jotDown/notes.json';
+        break;
+    }
+    return File(filePath);
+  }
+
+  Future<void> _refreshNotes() async {
+    if (!mounted) return;
+
+    try {
+      final settings = await _settingsService.loadSettings();
+
+      String? password;
+      if (settings.encryptionEnabled && settings.passwordHash != null) {
+        if (PasswordManager.isAuthenticated) {
+          password = PasswordManager.currentPassword;
+        } else {
+          // Don't prompt for password during background refresh
+          return;
+        }
+      }
+
+      final notes = await _notesService.loadNotes(settings, password);
+
+      if (mounted) {
+        setState(() {
+          _settings = settings;
+          _notes = notes..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+        });
+      }
+    } catch (e) {
+      // Ignore errors during background refresh
+    }
   }
 
   Future<void> _loadSettingsAndNotes() async {
@@ -63,6 +182,10 @@ class _NotesListScreenState extends State<NotesListScreen> {
       }
 
       final notes = await _notesService.loadNotes(settings, password);
+
+      // Update file modification time for tracking changes
+      await _updateLastModified(settings);
+
       setState(() {
         _settings = settings;
         _notes = notes..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
@@ -79,9 +202,8 @@ class _NotesListScreenState extends State<NotesListScreen> {
   }
 
   Future<void> _saveNote(Note note) async {
-    final password = _settings.encryptionEnabled
-        ? PasswordManager.currentPassword
-        : null;
+    final password =
+        _settings.encryptionEnabled ? PasswordManager.currentPassword : null;
     await _notesService.saveNote(note, _notes, _settings, password);
     _loadSettingsAndNotes();
   }
@@ -106,9 +228,8 @@ class _NotesListScreenState extends State<NotesListScreen> {
     );
 
     if (shouldDelete == true) {
-      final password = _settings.encryptionEnabled
-          ? PasswordManager.currentPassword
-          : null;
+      final password =
+          _settings.encryptionEnabled ? PasswordManager.currentPassword : null;
       await _notesService.deleteNote(note.id, _notes, _settings, password);
       _loadSettingsAndNotes();
     }
@@ -145,13 +266,32 @@ class _NotesListScreenState extends State<NotesListScreen> {
   }
 
   List<Note> get _filteredNotes {
-    if (_searchQuery.isEmpty) {
-      return _notes;
+    var filteredNotes = _notes;
+
+    // Filter by selected tag first
+    if (_selectedTag != null && _selectedTag!.isNotEmpty) {
+      filteredNotes =
+          filteredNotes.where((note) => note.hasTag(_selectedTag!)).toList();
     }
-    return _notes.where((note) {
-      return note.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          note.content.toLowerCase().contains(_searchQuery.toLowerCase());
-    }).toList();
+
+    // Then filter by search query
+    if (_searchQuery.isNotEmpty) {
+      filteredNotes = filteredNotes.where((note) {
+        return note.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+            note.content.toLowerCase().contains(_searchQuery.toLowerCase());
+      }).toList();
+    }
+
+    return filteredNotes;
+  }
+
+  List<String> get _availableTags {
+    final Set<String> allTags = {};
+    for (final note in _notes) {
+      allTags.addAll(note.tags);
+    }
+    final tagList = allTags.toList()..sort();
+    return tagList;
   }
 
   Future<String> _getSalt(AppSettings settings) async {
@@ -194,29 +334,91 @@ class _NotesListScreenState extends State<NotesListScreen> {
         title: const Text('jotDown'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              _loadSettingsAndNotes();
+            },
+            tooltip: 'Refresh',
+          ),
+          IconButton(
             icon: const Icon(Icons.settings),
             onPressed: _openSettings,
             tooltip: 'Settings',
           ),
         ],
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(60),
+          preferredSize: const Size.fromHeight(110),
           child: Padding(
             padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Search notes...',
-                prefixIcon: const Icon(Icons.search),
-                border: const OutlineInputBorder(),
-                filled: true,
-                fillColor: Theme.of(context).colorScheme.surface,
-              ),
-              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value;
-                });
-              },
+            child: Column(
+              children: [
+                // Search bar
+                TextField(
+                  decoration: InputDecoration(
+                    hintText: 'Search notes...',
+                    prefixIcon: const Icon(Icons.search),
+                    border: const OutlineInputBorder(),
+                    filled: true,
+                    fillColor: Theme.of(context).colorScheme.surface,
+                  ),
+                  style:
+                      TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                  onChanged: (value) {
+                    setState(() {
+                      _searchQuery = value;
+                    });
+                  },
+                ),
+                const SizedBox(height: 8),
+                // Tag filter dropdown
+                Row(
+                  children: [
+                    const Icon(Icons.label_outline, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: DropdownButtonFormField<String?>(
+                        value: _selectedTag,
+                        decoration: InputDecoration(
+                          hintText: 'Filter by tag...',
+                          border: const OutlineInputBorder(),
+                          filled: true,
+                          fillColor: Theme.of(context).colorScheme.surface,
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                        ),
+                        items: [
+                          const DropdownMenuItem<String?>(
+                            value: null,
+                            child: Text('All notes'),
+                          ),
+                          ..._availableTags
+                              .map((tag) => DropdownMenuItem<String?>(
+                                    value: tag,
+                                    child: Text('#$tag'),
+                                  )),
+                        ],
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedTag = value;
+                          });
+                        },
+                      ),
+                    ),
+                    if (_selectedTag != null) ...[
+                      const SizedBox(width: 8),
+                      IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          setState(() {
+                            _selectedTag = null;
+                          });
+                        },
+                        tooltip: 'Clear filter',
+                      ),
+                    ],
+                  ],
+                ),
+              ],
             ),
           ),
         ),
@@ -290,6 +492,47 @@ class _NotesListScreenState extends State<NotesListScreen> {
                 overflow: TextOverflow.ellipsis,
               ),
             ],
+            if (note.tags.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 4,
+                runSpacing: 4,
+                children: note.tags.map((tag) {
+                  final isDark =
+                      Theme.of(context).brightness == Brightness.dark;
+                  final backgroundColor = isDark
+                      ? Theme.of(context).colorScheme.surfaceVariant
+                      : Theme.of(context).primaryColor.withOpacity(0.1);
+                  final borderColor = isDark
+                      ? Theme.of(context).colorScheme.outline
+                      : Theme.of(context).primaryColor.withOpacity(0.3);
+                  final textColor = isDark
+                      ? Theme.of(context).colorScheme.onSurfaceVariant
+                      : Theme.of(context).primaryColor;
+
+                  return Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: backgroundColor,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: borderColor,
+                        width: 1,
+                      ),
+                    ),
+                    child: Text(
+                      '#$tag',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: textColor,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
             const SizedBox(height: 8),
             Text(
               'Updated: ${_formatDate(note.updatedAt)}',
@@ -333,6 +576,49 @@ class _NotesListScreenState extends State<NotesListScreen> {
       return '${difference.inDays}d ago';
     } else {
       return '${date.day}/${date.month}/${date.year}';
+    }
+  }
+
+  Future<void> _updateLastModified(AppSettings settings) async {
+    try {
+      if (settings.storageLocation == 'shared_preferences') {
+        final homeDir = Platform.environment['HOME'] ?? '';
+        final spFile = File(
+            '$homeDir/.local/share/com.example.jotdown/shared_preferences.json');
+        if (spFile.existsSync()) {
+          final stat = spFile.statSync();
+          _lastModified = stat.modified;
+        }
+      } else {
+        // For file storage
+        String directoryPath;
+        switch (settings.storageLocation) {
+          case 'documents':
+            final documentsDir = await getApplicationDocumentsDirectory();
+            directoryPath = '${documentsDir.path}/jotDown';
+            break;
+          case 'home':
+            final homeDir = Platform.environment['HOME'] ?? '';
+            directoryPath = '$homeDir/jotDown';
+            break;
+          case 'custom':
+            directoryPath = settings.customPath;
+            break;
+          default:
+            final documentsDir = await getApplicationDocumentsDirectory();
+            directoryPath = '${documentsDir.path}/jotDown';
+            break;
+        }
+
+        final notesFile = File('$directoryPath/notes.json');
+        if (notesFile.existsSync()) {
+          final stat = notesFile.statSync();
+          _lastModified = stat.modified;
+        }
+      }
+    } catch (e) {
+      // Ignore errors in file stat checking
+      print('Error updating last modified time: $e');
     }
   }
 }
