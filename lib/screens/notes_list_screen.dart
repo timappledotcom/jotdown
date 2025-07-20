@@ -53,7 +53,7 @@ class _NotesListScreenState extends State<NotesListScreen>
     // Refresh when app regains focus or becomes active
     if (state == AppLifecycleState.resumed || state == AppLifecycleState.inactive) {
       print('App lifecycle changed to $state, refreshing notes...');
-      _refreshNotes();
+      _forceRefresh();
     }
   }
 
@@ -164,6 +164,58 @@ class _NotesListScreenState extends State<NotesListScreen>
       }
     } catch (e) {
       // Ignore errors during background refresh
+    }
+  }
+
+  Future<void> _forceRefresh() async {
+    if (!mounted) return;
+
+    try {
+      final settings = await _settingsService.loadSettings();
+
+      String? password;
+      if (settings.encryptionEnabled && settings.passwordHash != null) {
+        if (PasswordManager.isAuthenticated) {
+          password = PasswordManager.currentPassword;
+        } else {
+          // For manual refresh, we still need to authenticate
+          password = await PasswordManager.showPasswordInputDialog(
+            context,
+            passwordHash: settings.passwordHash!,
+            salt: await _getSalt(settings),
+          );
+
+          if (password == null) {
+            return; // User cancelled
+          }
+        }
+      }
+
+      final notes = await _notesService.loadNotes(settings, password);
+
+      // Force update the last modified time
+      await _updateLastModified(settings);
+
+      if (mounted) {
+        setState(() {
+          _settings = settings;
+          _notes = notes..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+        });
+        
+        // Show feedback that refresh completed
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Notes refreshed'),
+            duration: Duration(seconds: 1),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error refreshing notes: $e')),
+        );
+      }
     }
   }
 
@@ -496,7 +548,7 @@ class _NotesListScreenState extends State<NotesListScreen>
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
-              _loadSettingsAndNotes();
+              _forceRefresh();
             },
             tooltip: 'Refresh',
           ),
