@@ -265,6 +265,75 @@ class _NotesListScreenState extends State<NotesListScreen>
     );
   }
 
+  void _showHelpDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.help_outline),
+            SizedBox(width: 8),
+            Text('How to use jotDown'),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Creating Notes:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const Text('• Tap the + button to create a new note'),
+              const Text('• Use Markdown formatting for rich text'),
+              const Text('• Notes are automatically saved'),
+              const SizedBox(height: 16),
+              const Text(
+                'Using Tags:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const Text('• Add tags anywhere in your note using #tagname'),
+              const Text('• Example: "Meeting about #work and #planning"'),
+              const Text('• Tags appear as badges on note cards'),
+              const Text('• Use the dropdown above to filter by tag'),
+              const SizedBox(height: 16),
+              const Text(
+                'Searching:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const Text('• Use the search bar to find notes by content'),
+              const Text('• Combine with tag filtering for precise results'),
+              const Text('• Search works across both titles and content'),
+              const SizedBox(height: 16),
+              const Text(
+                'Command Line:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const Text('• Use "jd" command in terminal for CLI access'),
+              const Text('• CLI and GUI share the same notes'),
+              const Text('• Type "jd --help" for full CLI documentation'),
+              const SizedBox(height: 16),
+              const Text(
+                'Settings:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const Text('• Configure storage location and themes'),
+              const Text('• Enable encryption for sensitive notes'),
+              const Text('• Export and migrate your notes'),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Got it!'),
+          ),
+        ],
+      ),
+    );
+  }
+
   List<Note> get _filteredNotes {
     var filteredNotes = _notes;
 
@@ -333,6 +402,11 @@ class _NotesListScreenState extends State<NotesListScreen>
       appBar: AppBar(
         title: const Text('jotDown'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.help_outline),
+            onPressed: _showHelpDialog,
+            tooltip: 'Help',
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
