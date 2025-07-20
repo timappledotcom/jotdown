@@ -49,18 +49,19 @@ jotDown is a beautiful, feature-rich notes application for Linux that combines t
 
 ## 📦 Installation
 
-### Download Pre-built Packages
+### Download & Installation
 
-Choose your preferred package format from our [releases page](https://github.com/timappledotcom/jotdown/releases):
+### Linux Packages
 
-#### DEB Package (Ubuntu/Debian)
+Choose the package format that works best for your Linux distribution:
+
+#### DEB Package (Debian/Ubuntu)
 ```bash
 wget https://github.com/timappledotcom/jotdown/releases/download/v0.1.1/jotdown-0.1.1-linux-amd64.deb
 sudo dpkg -i jotdown-0.1.1-linux-amd64.deb
-sudo apt-get install -f  # Fix dependencies if needed
 ```
 
-#### RPM Package (Fedora/RHEL/openSUSE)
+#### RPM Package (Red Hat/Fedora/SUSE)
 ```bash
 wget https://github.com/timappledotcom/jotdown/releases/download/v0.1.1/jotdown-0.1.1-linux-amd64.rpm
 sudo rpm -i jotdown-0.1.1-linux-amd64.rpm
@@ -72,6 +73,8 @@ wget https://github.com/timappledotcom/jotdown/releases/download/v0.1.1/jotdown-
 chmod +x jotdown-0.1.1-linux-x86_64.AppImage
 ./jotdown-0.1.1-linux-x86_64.AppImage
 ```
+
+> 📦 **Latest Release**: v0.1.1 - [View all releases](https://github.com/timappledotcom/jotdown/releases)
 
 ### Build from Source
 
