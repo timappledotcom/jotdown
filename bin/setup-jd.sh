@@ -22,11 +22,12 @@ fi
 # Common jotDown installation paths
 COMMON_PATHS=(
     "/opt/jotdown/bin/jd"
-    "/usr/local/jotdown/bin/jd" 
+    "/usr/local/jotdown/bin/jd"
     "/usr/share/jotdown/bin/jd"
     "$HOME/.local/share/jotdown/bin/jd"
     "$HOME/Applications/jotdown/bin/jd"
-    "./bin/jd"  # Current directory
+    "$(pwd)/bin/jd"  # Current directory
+    "$(dirname "$0")/jd"  # Same directory as this script
 )
 
 JD_SCRIPT=""
@@ -63,12 +64,24 @@ TARGET="/usr/local/bin/jd"
 if [ -w "/usr/local/bin" ]; then
     # Remove existing symlink if it exists
     [ -L "$TARGET" ] && rm "$TARGET"
-    
+
     # Create symlink
     if ln -s "$JD_SCRIPT" "$TARGET" 2>/dev/null; then
         echo "✅ Successfully set up 'jd' command!"
+
+        # Verify the symlink works
+        if [ -L "$TARGET" ] && [ -f "$TARGET" ]; then
+            echo "✓ Symlink created and verified: $TARGET -> $JD_SCRIPT"
+        else
+            echo "⚠️  Symlink created but verification failed"
+            echo "   Target: $TARGET"
+            echo "   Source: $JD_SCRIPT"
+        fi
     else
         echo "❌ Failed to create symlink"
+        echo "   From: $JD_SCRIPT"
+        echo "   To: $TARGET"
+        echo "   Try running with sudo or check permissions"
         exit 1
     fi
 else

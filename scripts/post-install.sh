@@ -15,13 +15,13 @@ echo "Setting up jotDown CLI..."
 if [ ! -d "$INSTALL_DIR" ]; then
     echo "Warning: jotDown installation directory not found at $INSTALL_DIR"
     echo "Looking for alternative installation paths..."
-    
+
     # Check common AppImage paths
     if [ -f "$HOME/.local/bin/jotdown.AppImage" ]; then
         echo "Found AppImage installation"
         exit 0
     fi
-    
+
     exit 1
 fi
 
@@ -40,10 +40,10 @@ if [ -w "$BIN_DIR" ]; then
     if [ -L "$JD_SYMLINK" ]; then
         rm "$JD_SYMLINK"
     fi
-    
+
     # Create new symlink
     ln -s "$JD_SCRIPT" "$JD_SYMLINK"
-    
+
     if [ $? -eq 0 ]; then
         echo "✓ jd command installed successfully"
         echo "You can now use 'jd' from anywhere in the terminal"

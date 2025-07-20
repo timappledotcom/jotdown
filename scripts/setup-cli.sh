@@ -10,19 +10,29 @@ find_jotdown() {
     # Common installation paths
     local paths=(
         "/opt/jotdown"
-        "/usr/local/jotdown" 
+        "/usr/local/jotdown"
         "/usr/share/jotdown"
         "$HOME/.local/share/jotdown"
         "$HOME/Applications/jotdown"
+        "$(pwd)"  # Current directory
+        "$(dirname "$(dirname "$(readlink -f "$0")")")"  # Script's parent directory
     )
-    
+
     for path in "${paths[@]}"; do
         if [ -d "$path" ] && [ -f "$path/bin/jd" ]; then
             echo "$path"
             return 0
         fi
     done
-    
+
+    # Also check if we can find jotdown executable nearby
+    for path in "${paths[@]}"; do
+        if [ -d "$path" ] && [ -f "$path/jotdown" ] && [ -f "$path/bin/jotdown.dart" ]; then
+            echo "$path"
+            return 0
+        fi
+    done
+
     return 1
 }
 
@@ -32,11 +42,20 @@ JOTDOWN_DIR=$(find_jotdown)
 if [ -z "$JOTDOWN_DIR" ]; then
     echo "❌ Could not find jotDown installation"
     echo ""
-    echo "Please make sure jotDown is installed. If you installed from a package,"
-    echo "the installation directory should contain a 'bin/jd' script."
+    echo "Searched in these locations:"
+    echo "  - /opt/jotdown/"
+    echo "  - /usr/local/jotdown/"
+    echo "  - /usr/share/jotdown/"
+    echo "  - ~/.local/share/jotdown/"
+    echo "  - ~/Applications/jotdown/"
+    echo "  - $(pwd)/"
     echo ""
-    echo "If you know where jotDown is installed, you can create the symlink manually:"
-    echo "sudo ln -s /path/to/jotdown/bin/jd /usr/local/bin/jd"
+    echo "Make sure jotDown is installed and contains a 'bin/jd' script."
+    echo ""
+    echo "If you know where jotDown is installed, create the symlink manually:"
+    echo "  sudo ln -s /path/to/jotdown/bin/jd /usr/local/bin/jd"
+    echo ""
+    echo "Or run this script from the jotDown installation directory."
     exit 1
 fi
 
@@ -54,10 +73,10 @@ if [ -w "/usr/local/bin" ]; then
     if [ -L "$JD_TARGET" ]; then
         rm "$JD_TARGET"
     fi
-    
+
     # Create symlink
     ln -s "$JD_SCRIPT" "$JD_TARGET"
-    
+
     if [ $? -eq 0 ]; then
         echo "✅ Successfully set up 'jd' command!"
         echo ""
