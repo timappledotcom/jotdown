@@ -1,87 +1,110 @@
 #!/bin/bash
 
-# jotDown CLI Setup Script
-# Run this after installing jotDown to set up the 'jd' command globally
+# jotDown CLI Quick Setup
+# This script helps set up the 'jd' command after installing jotDown
 
 echo "🔧 Setting up jotDown CLI command..."
 
-# Function to find jotDown installation
-find_jotdown() {
-    # Common installation paths
-    local paths=(
-        "/opt/jotdown"
-        "/usr/local/jotdown" 
-        "/usr/share/jotdown"
-        "$HOME/.local/share/jotdown"
-        "$HOME/Applications/jotdown"
-    )
-    
-    for path in "${paths[@]}"; do
-        if [ -d "$path" ] && [ -f "$path/bin/jd" ]; then
-            echo "$path"
-            return 0
-        fi
-    done
-    
-    return 1
+# Function to check if command exists
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
 }
 
-# Try to find jotDown installation
-JOTDOWN_DIR=$(find_jotdown)
+# Check if jd is already set up
+if command_exists jd; then
+    echo "✅ 'jd' command is already set up!"
+    echo "Current version: $(jd --version 2>/dev/null || echo 'Unknown')"
+    echo ""
+    echo "Test it: jd --help"
+    exit 0
+fi
 
-if [ -z "$JOTDOWN_DIR" ]; then
+# Common jotDown installation paths
+COMMON_PATHS=(
+    "/opt/jotdown/bin/jd"
+    "/usr/local/jotdown/bin/jd"
+    "/usr/share/jotdown/bin/jd"
+    "$HOME/.local/share/jotdown/bin/jd"
+    "$HOME/Applications/jotdown/bin/jd"
+    "$(pwd)/bin/jd"  # Current directory
+    "$(dirname "$0")/jd"  # Same directory as this script
+)
+
+JD_SCRIPT=""
+
+# Find jd script
+for path in "${COMMON_PATHS[@]}"; do
+    if [ -f "$path" ]; then
+        JD_SCRIPT="$path"
+        break
+    fi
+done
+
+if [ -z "$JD_SCRIPT" ]; then
     echo "❌ Could not find jotDown installation"
     echo ""
-    echo "Please make sure jotDown is installed. If you installed from a package,"
-    echo "the installation directory should contain a 'bin/jd' script."
+    echo "Please make sure jotDown is installed. Looking for 'bin/jd' script in:"
+    for path in "${COMMON_PATHS[@]}"; do
+        echo "  - $path"
+    done
     echo ""
-    echo "If you know where jotDown is installed, you can create the symlink manually:"
-    echo "sudo ln -s /path/to/jotdown/bin/jd /usr/local/bin/jd"
+    echo "If jotDown is installed elsewhere, create the symlink manually:"
+    echo "  sudo ln -s /path/to/jotdown/bin/jd /usr/local/bin/jd"
     exit 1
 fi
 
-echo "✓ Found jotDown at: $JOTDOWN_DIR"
+echo "✓ Found jotDown at: $(dirname "$(dirname "$JD_SCRIPT")")"
 
-JD_SCRIPT="$JOTDOWN_DIR/bin/jd"
-JD_TARGET="/usr/local/bin/jd"
-
-# Make sure the jd script is executable
+# Make sure the script is executable
 chmod +x "$JD_SCRIPT"
 
-# Check if we can write to /usr/local/bin
+# Try to create symlink in /usr/local/bin
+TARGET="/usr/local/bin/jd"
+
 if [ -w "/usr/local/bin" ]; then
     # Remove existing symlink if it exists
-    if [ -L "$JD_TARGET" ]; then
-        rm "$JD_TARGET"
-    fi
-    
+    [ -L "$TARGET" ] && rm "$TARGET"
+
     # Create symlink
-    ln -s "$JD_SCRIPT" "$JD_TARGET"
-    
-    if [ $? -eq 0 ]; then
+    if ln -s "$JD_SCRIPT" "$TARGET" 2>/dev/null; then
         echo "✅ Successfully set up 'jd' command!"
-        echo ""
-        echo "You can now use jotDown CLI with short commands:"
-        echo "  jd list                    # List all notes"
-        echo "  jd add -t 'Title' -c 'Text' # Add a new note"
-        echo "  jd view --id 123456789     # View a note"
-        echo "  jd search -q 'keyword'     # Search notes"
-        echo ""
-        echo "Try it now: jd --help"
+
+        # Verify the symlink works
+        if [ -L "$TARGET" ] && [ -f "$TARGET" ]; then
+            echo "✓ Symlink created and verified: $TARGET -> $JD_SCRIPT"
+        else
+            echo "⚠️  Symlink created but verification failed"
+            echo "   Target: $TARGET"
+            echo "   Source: $JD_SCRIPT"
+        fi
     else
         echo "❌ Failed to create symlink"
+        echo "   From: $JD_SCRIPT"
+        echo "   To: $TARGET"
+        echo "   Try running with sudo or check permissions"
         exit 1
     fi
 else
-    echo "⚠️  Need administrator privileges to set up global command"
+    echo "⚠️  Need administrator privileges"
     echo ""
-    echo "Please run with sudo:"
-    echo "sudo $0"
+    echo "Run with sudo to set up global command:"
+    echo "  sudo $0"
     echo ""
-    echo "Or create the symlink manually:"
-    echo "sudo ln -s $JD_SCRIPT $JD_TARGET"
+    echo "Or create symlink manually:"
+    echo "  sudo ln -s $JD_SCRIPT $TARGET"
     exit 1
 fi
 
 echo ""
-echo "🎉 Setup complete! jotDown CLI is ready to use."
+echo "🎉 Setup complete!"
+echo ""
+echo "Try these commands:"
+echo "  jd --help               # Show help"
+echo "  jd list                 # List notes"
+echo "  jd add -t 'Test' -c 'Hello!'  # Add a note"
+
+# Test the command
+if command_exists jd; then
+    echo ""
+    echo "✓ Command test successful: $(jd --version 2>/dev/null || echo 'jd command is working')"
+fi

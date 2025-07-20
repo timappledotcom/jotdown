@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle with gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4A90E2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2E5A8F;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="penGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2C3E50;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1A252F;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="128" cy="128" r="120" fill="url(#bgGradient)" stroke="#2E5A8F" stroke-width="4"/>
+
+  <!-- Pen body (fountain pen style) -->
+  <rect x="95" y="45" width="18" height="130" rx="9" fill="url(#penGradient)" transform="rotate(25 104 110)"/>
+
+  <!-- Pen cap -->
+  <rect x="94" y="40" width="20" height="30" rx="10" fill="#34495E" transform="rotate(25 104 55)"/>
+
+  <!-- Pen clip -->
+  <rect x="107" y="42" width="3" height="20" rx="1.5" fill="#BDC3C7" transform="rotate(25 108.5 52)"/>
+
+  <!-- Pen grip section -->
+  <rect x="96" y="150" width="16" height="20" rx="8" fill="#7F8C8D" transform="rotate(25 104 160)"/>
+
+  <!-- Pen nib -->
+  <polygon points="98,175 110,175 106,185 102,185" fill="#E74C3C" transform="rotate(25 104 180)"/>
+
+  <!-- Nib tip -->
+  <circle cx="104" cy="190" r="2" fill="#C0392B" transform="rotate(25 104 190)"/>
+
+  <!-- Writing flourish -->
+  <path d="M 140 175 Q 160 165 180 175 Q 200 185 190 200 Q 180 210 160 200"
+        stroke="#2C3E50" stroke-width="2.5" fill="none" opacity="0.8"/>
+
+  <!-- Ink drops -->
+  <circle cx="145" cy="195" r="1.5" fill="#2C3E50" opacity="0.6"/>
+  <circle cx="155" cy="200" r="1" fill="#2C3E50" opacity="0.4"/>
+
+  <!-- Subtle sparkles -->
+  <circle cx="70" cy="70" r="2" fill="#ECF0F1" opacity="0.8"/>
+  <circle cx="190" cy="80" r="1.5" fill="#ECF0F1" opacity="0.6"/>
+  <circle cx="200" cy="140" r="2" fill="#ECF0F1" opacity="0.7"/>
+  <circle cx="60" cy="180" r="1" fill="#ECF0F1" opacity="0.5"/>
+</svg>
