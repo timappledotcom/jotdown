@@ -1,0 +1,10 @@
+Package: jotdown
+Version: 0.1.1
+Section: utils
+Priority: optional
+Architecture: amd64
+Maintainer: jotDown Team <hello@jotdown.app>
+Description: Simple and elegant notes application
+ jotDown is a beautiful notes application for Linux with Markdown support,
+ encryption capabilities, and both GUI and CLI interfaces.
+Depends: libgtk-3-0, libx11-6, libsecret-1-0

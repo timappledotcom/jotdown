@@ -423,6 +423,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
         passwordHash: passwordData['hash'],
       );
 
+      // Store the password salt in SharedPreferences for verification
+      if (_settings.storageLocation == 'shared_preferences') {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('password_salt', passwordData['salt']!);
+        // Also set encryption_salt to the same value for consistency
+        await prefs.setString('encryption_salt', passwordData['salt']!);
+      } else {
+        // For file storage, store password salt in a separate file
+        final filePath = await _getLocationPath(_settings.storageLocation);
+        final passwordSaltFile = File('$filePath/password.salt');
+        await passwordSaltFile.parent.create(recursive: true);
+        await passwordSaltFile.writeAsString(passwordData['salt']!);
+        
+        // Also ensure encryption salt file uses the same salt
+        final encryptionSaltFile = File('$filePath/notes.json.salt');
+        await encryptionSaltFile.writeAsString(passwordData['salt']!);
+      }
+
       // Save notes with encryption
       await _notesService.saveNotes(
         currentNotes,
@@ -530,6 +548,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
         passwordHash: passwordData['newHash'],
       );
 
+      // Store the new password salt
+      if (_settings.storageLocation == 'shared_preferences') {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('password_salt', passwordData['newSalt']!);
+        // Also update encryption salt to keep them in sync
+        await prefs.setString('encryption_salt', passwordData['newSalt']!);
+      } else {
+        final filePath = await _getLocationPath(_settings.storageLocation);
+        final passwordSaltFile = File('$filePath/password.salt');
+        await passwordSaltFile.writeAsString(passwordData['newSalt']!);
+        
+        // Also update encryption salt file
+        final encryptionSaltFile = File('$filePath/notes.json.salt');
+        await encryptionSaltFile.writeAsString(passwordData['newSalt']!);
+      }
+
       // Re-encrypt notes with new password
       await _notesService.saveNotes(
         currentNotes,
@@ -562,9 +596,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<String> _getSalt() async {
     if (_settings.storageLocation == 'shared_preferences') {
       final prefs = await SharedPreferences.getInstance();
-      return prefs.getString('encryption_salt') ?? '';
+      // First try to get password salt, fallback to encryption salt
+      return prefs.getString('password_salt') ?? 
+             prefs.getString('encryption_salt') ?? '';
     } else {
       final filePath = await _getLocationPath(_settings.storageLocation);
+      // First try password salt file, then encryption salt file
+      final passwordSaltFile = File('$filePath/password.salt');
+      if (await passwordSaltFile.exists()) {
+        return await passwordSaltFile.readAsString();
+      }
+      
       final saltFile = File('$filePath/notes.json.salt');
       if (await saltFile.exists()) {
         return await saltFile.readAsString();
@@ -580,9 +622,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       });
 
       final backupService = BackupService();
-      final password = _settings.encryptionEnabled
-          ? PasswordManager.currentPassword
-          : null;
+      final password =
+          _settings.encryptionEnabled ? PasswordManager.currentPassword : null;
 
       // Load all notes
       final notes = await _notesService.loadNotes(_settings, password);
@@ -719,9 +760,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       });
 
       final backupService = BackupService();
-      final password = _settings.encryptionEnabled
-          ? PasswordManager.currentPassword
-          : null;
+      final password =
+          _settings.encryptionEnabled ? PasswordManager.currentPassword : null;
 
       // Let user choose backup location
       final result = await FilePicker.platform.saveFile(

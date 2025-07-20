@@ -147,7 +147,7 @@ void main(List<String> arguments) async {
     }
 
     if (results['version'] as bool) {
-      print('jotDown CLI v1.0.0');
+      print('jotDown CLI v1.0.2');
       return;
     }
 
@@ -179,7 +179,7 @@ void _showHelp(ArgParser parser) {
 }
 
 void _showVersion() {
-  print('jotDown CLI v1.0.0');
+  print('jotDown CLI v1.0.2');
 }
 
 class JotDownCLI {

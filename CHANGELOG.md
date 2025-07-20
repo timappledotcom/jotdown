@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# Changelog
+
+## [0.1.2] - 2025-07-19
+
+### Fixed
+- **Critical Password Bug**: Fixed salt mismatch issue that caused "Incorrect password" errors even with correct passwords
+- Password verification now uses the correct salt consistently between setup and verification
+- Added proper password salt storage separate from encryption salt
+- **CLI Setup Issue**: Fixed `jd` command not being available after installation
+
+### Added
+- Setup scripts for configuring the `jd` CLI command globally
+- Included `setup-jd.sh` script in installation packages
+- Improved installation instructions for CLI access
+- Improved salt handling for both SharedPreferences and file storage modes
+
+### Technical Details
+- Fixed `_enableEncryption()` and `_changePassword()` methods in settings screen
+- Updated `_getSalt()` method to prioritize password salt over encryption salt
+- Added migration logic to handle existing installations
+
 ## [0.1.1] - 2025-07-19
 
 ### Fixed
@@ -79,7 +100,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Package Formats
 - **DEB**: For Ubuntu, Debian, and derivatives
-- **RPM**: For Fedora, RHEL, openSUSE, and derivatives  
+- **RPM**: For Fedora, RHEL, openSUSE, and derivatives
 - **AppImage**: Universal Linux package (portable)
 
 ---

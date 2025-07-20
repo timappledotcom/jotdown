@@ -4,7 +4,41 @@ A command-line interface for jotDown that shares the same data with the desktop 
 
 ## Installation
 
-The CLI is included with your jotDown installation. No additional setup is required.
+The CLI is included with your jotDown installation. After installing jotDown, set up the `jd` command for convenient CLI access:
+
+### Quick Setup (Recommended)
+```bash
+# Navigate to jotDown installation and run the setup script
+cd /opt/jotdown  # or wherever jotDown is installed
+sudo ./bin/setup-jd.sh
+```
+
+### Alternative Setup Methods
+
+#### Download Setup Script
+```bash
+wget https://github.com/timappledotcom/jotdown/releases/download/v0.1.2/setup-cli.sh
+chmod +x setup-cli.sh
+sudo ./setup-cli.sh
+```
+
+#### Manual Setup
+```bash
+# Create symlink manually
+sudo ln -s /opt/jotdown/bin/jd /usr/local/bin/jd
+jd --help
+```
+
+### Using Without Global Setup
+If you prefer not to set up the global command, you can use the CLI directly:
+```bash
+# Navigate to jotDown installation directory
+cd /opt/jotdown
+./bin/jd --help
+
+# Or use the full Dart command from anywhere
+dart /opt/jotdown/bin/jotdown.dart --help
+```
 
 ## Usage
 
@@ -12,83 +46,83 @@ The CLI is included with your jotDown installation. No additional setup is requi
 
 #### List all notes
 ```bash
-dart bin/jotdown.dart list
+jd list
 ```
 
 #### Add a new note
 ```bash
 # Add note with title and content
-dart bin/jotdown.dart add -t "My Note Title" -c "Note content here"
+jd add -t "My Note Title" -c "Note content here"
 
 # Add note using your default editor
-dart bin/jotdown.dart add -t "My Note Title" --editor
+jd add -t "My Note Title" --editor
 
 # Add note with content from stdin
-echo "Note content" | dart bin/jotdown.dart add -t "My Note Title" -c -
+echo "Note content" | jd add -t "My Note Title" -c -
 ```
 
 #### View a note
 ```bash
 # View note with markdown formatting
-dart bin/jotdown.dart view --id NOTE_ID
+jd view --id NOTE_ID
 
 # View raw markdown
-dart bin/jotdown.dart view --id NOTE_ID --raw
+jd view --id NOTE_ID --raw
 ```
 
 #### Edit a note
 ```bash
 # Edit note content inline
-dart bin/jotdown.dart edit --id NOTE_ID -c "New content"
+jd edit --id NOTE_ID -c "New content"
 
 # Edit note title
-dart bin/jotdown.dart edit --id NOTE_ID -t "New Title"
+jd edit --id NOTE_ID -t "New Title"
 
 # Edit note using your default editor
-dart bin/jotdown.dart edit --id NOTE_ID --editor
+jd edit --id NOTE_ID --editor
 ```
 
 #### Delete a note
 ```bash
 # Delete with confirmation
-dart bin/jotdown.dart delete --id NOTE_ID
+jd delete --id NOTE_ID
 
 # Force delete without confirmation
-dart bin/jotdown.dart delete --id NOTE_ID --force
+jd delete --id NOTE_ID --force
 ```
 
 #### Search notes
 ```bash
-dart bin/jotdown.dart search -q "search term"
+jd search -q "search term"
 ```
 
 ### Settings Management
 
 #### View current settings
 ```bash
-dart bin/jotdown.dart settings --show
+jd settings --show
 ```
 
 #### Change storage location
 ```bash
 # Use documents folder
-dart bin/jotdown.dart settings --storage documents
+jd settings --storage documents
 
 # Use home directory
-dart bin/jotdown.dart settings --storage home
+jd settings --storage home
 
 # Use custom path
-dart bin/jotdown.dart settings --storage custom --custom-path /path/to/notes
+jd settings --storage custom --custom-path /path/to/notes
 
 # Use shared preferences (CLI will use config directory)
-dart bin/jotdown.dart settings --storage shared_preferences
+jd settings --storage shared_preferences
 ```
 
 #### Change theme (affects desktop app)
 ```bash
-dart bin/jotdown.dart settings --theme system   # Follow system theme
-dart bin/jotdown.dart settings --theme light    # Always light theme
-dart bin/jotdown.dart settings --theme dark     # Always dark theme
+jd settings --theme system   # Follow system theme
+jd settings --theme light    # Always light theme
+jd settings --theme dark     # Always dark theme
 ```
 
 ## Data Sharing
@@ -131,24 +165,24 @@ jd view --id 123456789
 
 ### Creating a quick note
 ```bash
-dart bin/jotdown.dart add -t "Shopping List" -c "- Milk\\n- Bread\\n- Eggs"
+jd add -t "Shopping List" -c "- Milk\\n- Bread\\n- Eggs"
 ```
 
 ### Creating a note with your editor
 ```bash
 export EDITOR=nano
-dart bin/jotdown.dart add -t "Meeting Notes" --editor
+jd add -t "Meeting Notes" --editor
 ```
 
 ### Searching for notes
 ```bash
-dart bin/jotdown.dart search -q "meeting"
-dart bin/jotdown.dart search -q "TODO"
+jd search -q "meeting"
+jd search -q "TODO"
 ```
 
 ### Backing up notes to a custom location
 ```bash
-dart bin/jotdown.dart settings --storage custom --custom-path ~/Dropbox/Notes
+jd settings --storage custom --custom-path ~/Dropbox/Notes
 ```
 
 ### Viewing notes with markdown formatting
@@ -162,19 +196,19 @@ dart bin/jotdown.dart settings --storage custom --custom-path ~/Dropbox/Notes
 
 1. **Pipe content**: Use pipes and redirection with the CLI
    ```bash
-   echo "Meeting agenda" | dart bin/jotdown.dart add -t "Meeting" -c -
+   echo "Meeting agenda" | jd add -t "Meeting" -c -
    ```
 
 2. **Script integration**: Use in shell scripts for automation
    ```bash
    #!/bin/bash
    DATE=$(date +%Y-%m-%d)
-   dart bin/jotdown.dart add -t "Daily Log $DATE" --editor
+   jd add -t "Daily Log $DATE" --editor
    ```
 
 3. **Quick view**: List notes and pipe to grep for quick filtering
    ```bash
-   dart bin/jotdown.dart list | grep -i "todo"
+   jd list | grep -i "todo"
    ```
 
 4. **Backup**: Export all notes to individual files
