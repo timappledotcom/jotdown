@@ -57,37 +57,39 @@ jotDown is a beautiful, feature-rich notes application for Linux that combines t
 
 Choose the package format that works best for your Linux distribution:
 
-#### DEB Package (Debian/Ubuntu) - 20.8 MB
+#### DEB Package (Debian/Ubuntu) - 21.0 MB
 ```bash
-wget https://github.com/timappledotcom/jotdown/releases/download/v0.1.6/jotdown-v0.1.6-amd64.deb
-sudo dpkg -i jotdown-v0.1.6-amd64.deb
+wget https://github.com/timappledotcom/jotdown/releases/download/v0.1.7/jotdown-v0.1.7-amd64.deb
+sudo dpkg -i jotdown-v0.1.7-amd64.deb
 ```
 
-#### RPM Package (Red Hat/Fedora/SUSE) - 25.8 MB
+#### RPM Package (Red Hat/Fedora/SUSE) - 26.0 MB
 ```bash
-wget https://github.com/timappledotcom/jotdown/releases/download/v0.1.6/jotdown-v0.1.6-x86_64.rpm
-sudo rpm -i jotdown-v0.1.6-x86_64.rpm
+wget https://github.com/timappledotcom/jotdown/releases/download/v0.1.7/jotdown-v0.1.7-x86_64.rpm
+sudo rpm -i jotdown-v0.1.7-x86_64.rpm
 # Or with dnf/yum:
-sudo dnf install jotdown-v0.1.6-x86_64.rpm
+sudo dnf install jotdown-v0.1.7-x86_64.rpm
 ```
 
-#### AppImage (Universal) - 22.9 MB
+#### AppImage (Universal) - 20.0 MB
 ```bash
-wget https://github.com/timappledotcom/jotdown/releases/download/v0.1.6/JotDown-v0.1.6-x86_64.AppImage
-chmod +x JotDown-v0.1.6-x86_64.AppImage
-./JotDown-v0.1.6-x86_64.AppImage
+wget https://github.com/timappledotcom/jotdown/releases/download/v0.1.7/JotDown-v0.1.7-x86_64.AppImage
+chmod +x JotDown-v0.1.7-x86_64.AppImage
+./JotDown-v0.1.7-x86_64.AppImage
 ```
 
-#### Portable Archive (TAR.XZ) - 15.9 MB
+#### Portable Archive (TAR.XZ) - 19.0 MB
 ```bash
-wget https://github.com/timappledotcom/jotdown/releases/download/v0.1.6/jotdown-v0.1.6-linux-x64.tar.xz
-tar -xf jotdown-v0.1.6-linux-x64.tar.xz
-cd jotdown-v0.1.6-linux-x64
+wget https://github.com/timappledotcom/jotdown/releases/download/v0.1.7/jotdown-v0.1.7-linux-x64.tar.xz
+tar -xf jotdown-v0.1.7-linux-x64.tar.xz
+cd jotdown-v0.1.7-linux-x64
 ./install.sh  # Optional: install system-wide
 # Or run directly: ./jotdown
 ```
 
-> 📦 **Latest Release**: v0.1.6 - [View all releases](https://github.com/timappledotcom/jotdown/releases)
+> 📦 **Latest Release**: v0.1.7 - [View all releases](https://github.com/timappledotcom/jotdown/releases)
+> 
+> 🔧 **v0.1.7 Highlights**: Fixed dock icon display and taskbar pinning issues
 
 ### Setting up CLI Command
 
