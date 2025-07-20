@@ -10,6 +10,13 @@ class CLINotesService {
 
   Future<AppSettings> loadSettings() async {
     try {
+      // First try to load from GUI SharedPreferences format
+      final guiSettings = await _loadSettingsFromSharedPreferences();
+      if (guiSettings != null) {
+        return guiSettings;
+      }
+
+      // Fallback to CLI-specific settings file
       final settingsFile = await _getSettingsFile();
       if (!await settingsFile.exists()) {
         return AppSettings();
@@ -24,16 +31,65 @@ class CLINotesService {
     }
   }
 
+  Future<AppSettings?> _loadSettingsFromSharedPreferences() async {
+    try {
+      final homeDir = Platform.environment['HOME'] ?? '';
+      final spFile = File(
+          '$homeDir/.local/share/com.example.jotdown/shared_preferences.json');
+
+      if (!await spFile.exists()) {
+        return null;
+      }
+
+      final spContent = await spFile.readAsString();
+      final spData = json.decode(spContent) as Map<String, dynamic>;
+      final settingsJson = spData['flutter.app_settings'] as String?;
+
+      if (settingsJson == null) {
+        return null;
+      }
+
+      final settingsMap = json.decode(settingsJson) as Map<String, dynamic>;
+      return AppSettings.fromJson(settingsMap);
+    } catch (e) {
+      return null; // Fallback to CLI settings
+    }
+  }
+
   Future<void> saveSettings(AppSettings settings) async {
     try {
-      final settingsFile = await _getSettingsFile();
-      await settingsFile.parent.create(recursive: true);
+      // Check if GUI SharedPreferences file exists, if so update it
+      final homeDir = Platform.environment['HOME'] ?? '';
+      final spFile = File(
+          '$homeDir/.local/share/com.example.jotdown/shared_preferences.json');
 
-      final settingsJson = json.encode(settings.toJson());
-      await settingsFile.writeAsString(settingsJson);
+      if (await spFile.exists()) {
+        await _saveSettingsToSharedPreferences(settings, spFile);
+      } else {
+        // Fallback to CLI-specific settings file
+        final settingsFile = await _getSettingsFile();
+        await settingsFile.parent.create(recursive: true);
+
+        final settingsJson = json.encode(settings.toJson());
+        await settingsFile.writeAsString(settingsJson);
+      }
     } catch (e) {
       print('Error saving settings: $e');
     }
+  }
+
+  Future<void> _saveSettingsToSharedPreferences(
+      AppSettings settings, File spFile) async {
+    // Load existing SharedPreferences data
+    final spContent = await spFile.readAsString();
+    final spData = json.decode(spContent) as Map<String, dynamic>;
+
+    // Update the app settings in SharedPreferences format
+    final settingsJson = json.encode(settings.toJson());
+    spData['flutter.app_settings'] = settingsJson;
+
+    // Write back to SharedPreferences file
+    await spFile.writeAsString(json.encode(spData));
   }
 
   Future<List<Note>> loadNotes([
@@ -51,34 +107,84 @@ class CLINotesService {
         return [];
       }
 
-      final notesFile = await getNotesFile(settings);
-
-      if (!await notesFile.exists()) {
-        return [];
+      if (settings.storageLocation == 'shared_preferences') {
+        return await _loadFromSharedPreferences(settings, password);
+      } else {
+        return await _loadFromFile(settings, password);
       }
-
-      String content = await notesFile.readAsString();
-
-      // Decrypt if encryption is enabled
-      if (settings.encryptionEnabled && password != null) {
-        try {
-          final saltFile = File('${notesFile.path}.salt');
-          if (!await saltFile.exists()) {
-            throw Exception('Encryption salt file not found');
-          }
-          final salt = await saltFile.readAsString();
-          content = EncryptionService.decrypt(content, password, salt);
-        } catch (e) {
-          throw Exception('Failed to decrypt notes: $e');
-        }
-      }
-
-      final List<dynamic> notesList = json.decode(content);
-      return notesList.map((json) => Note.fromJson(json)).toList();
     } catch (e) {
       print('Error loading notes: $e');
       return [];
     }
+  }
+
+  Future<List<Note>> _loadFromSharedPreferences(
+    AppSettings settings, [
+    String? password,
+  ]) async {
+    final homeDir = Platform.environment['HOME'] ?? '';
+    final spFile = File(
+        '$homeDir/.local/share/com.example.jotdown/shared_preferences.json');
+
+    if (!await spFile.exists()) {
+      return [];
+    }
+
+    final spContent = await spFile.readAsString();
+    final spData = json.decode(spContent) as Map<String, dynamic>;
+    final notesJson = spData['flutter.notes_data'] as String?;
+
+    if (notesJson == null) {
+      return [];
+    }
+
+    String jsonData = notesJson;
+
+    // Decrypt if encryption is enabled
+    if (settings.encryptionEnabled && password != null) {
+      try {
+        final salt = spData['flutter.encryption_salt'] as String?;
+        if (salt == null) {
+          throw Exception('Encryption salt not found');
+        }
+        jsonData = EncryptionService.decrypt(notesJson, password, salt);
+      } catch (e) {
+        throw Exception('Failed to decrypt notes: $e');
+      }
+    }
+
+    final List<dynamic> notesList = json.decode(jsonData);
+    return notesList.map((json) => Note.fromJson(json)).toList();
+  }
+
+  Future<List<Note>> _loadFromFile(
+    AppSettings settings, [
+    String? password,
+  ]) async {
+    final notesFile = await getNotesFile(settings);
+
+    if (!await notesFile.exists()) {
+      return [];
+    }
+
+    String content = await notesFile.readAsString();
+
+    // Decrypt if encryption is enabled
+    if (settings.encryptionEnabled && password != null) {
+      try {
+        final saltFile = File('${notesFile.path}.salt');
+        if (!await saltFile.exists()) {
+          throw Exception('Encryption salt file not found');
+        }
+        final salt = await saltFile.readAsString();
+        content = EncryptionService.decrypt(content, password, salt);
+      } catch (e) {
+        throw Exception('Failed to decrypt notes: $e');
+      }
+    }
+
+    final List<dynamic> notesList = json.decode(content);
+    return notesList.map((json) => Note.fromJson(json)).toList();
   }
 
   Future<void> saveNotes(
@@ -88,33 +194,82 @@ class CLINotesService {
   ]) async {
     try {
       settings ??= await loadSettings();
-      final notesFile = await getNotesFile(settings);
 
-      await notesFile.parent.create(recursive: true);
-
-      String notesJson = json.encode(
-        notes.map((note) => note.toJson()).toList(),
-      );
-
-      // Encrypt if encryption is enabled
-      if (settings.encryptionEnabled && password != null) {
-        final saltFile = File('${notesFile.path}.salt');
-        String? salt;
-
-        if (await saltFile.exists()) {
-          salt = await saltFile.readAsString();
-        } else {
-          salt = EncryptionService.generateSalt();
-          await saltFile.writeAsString(salt);
-        }
-
-        notesJson = EncryptionService.encrypt(notesJson, password, salt);
+      if (settings.storageLocation == 'shared_preferences') {
+        await _saveToSharedPreferences(notes, settings, password);
+      } else {
+        await _saveToFile(notes, settings, password);
       }
-
-      await notesFile.writeAsString(notesJson);
     } catch (e) {
       print('Error saving notes: $e');
     }
+  }
+
+  Future<void> _saveToSharedPreferences(
+    List<Note> notes,
+    AppSettings settings, [
+    String? password,
+  ]) async {
+    final homeDir = Platform.environment['HOME'] ?? '';
+    final spFile = File(
+        '$homeDir/.local/share/com.example.jotdown/shared_preferences.json');
+
+    // Load existing SharedPreferences data
+    Map<String, dynamic> spData = {};
+    if (await spFile.exists()) {
+      final spContent = await spFile.readAsString();
+      spData = json.decode(spContent) as Map<String, dynamic>;
+    }
+
+    String notesJson = json.encode(notes.map((note) => note.toJson()).toList());
+
+    // Encrypt if encryption is enabled
+    if (settings.encryptionEnabled && password != null) {
+      final salt = spData['flutter.encryption_salt'] as String?;
+      if (salt == null) {
+        throw Exception('Encryption salt not found');
+      }
+      notesJson = EncryptionService.encrypt(notesJson, password, salt);
+    }
+
+    // Update the notes data in SharedPreferences format
+    spData['flutter.notes_data'] = notesJson;
+
+    // Ensure parent directory exists
+    await spFile.parent.create(recursive: true);
+
+    // Write back to SharedPreferences file
+    await spFile.writeAsString(json.encode(spData));
+  }
+
+  Future<void> _saveToFile(
+    List<Note> notes,
+    AppSettings settings, [
+    String? password,
+  ]) async {
+    final notesFile = await getNotesFile(settings);
+    await notesFile.parent.create(recursive: true);
+
+    String notesJson = json.encode(
+      notes.map((note) => note.toJson()).toList(),
+    );
+
+    // Encrypt if encryption is enabled
+    if (settings.encryptionEnabled && password != null) {
+      final saltFile = File('${notesFile.path}.salt');
+      String? salt;
+
+      if (await saltFile.exists()) {
+        salt = await saltFile.readAsString();
+      } else {
+        salt = EncryptionService.generateSalt();
+        await saltFile.writeAsString(salt);
+      }
+
+      notesJson = EncryptionService.encrypt(notesJson, password, salt);
+    }
+
+    await notesFile.writeAsString(notesJson);
   }
 
   Future<void> saveNote(
@@ -167,9 +322,9 @@ class CLINotesService {
         directoryPath = settings.customPath;
         break;
       default:
-        // Use ~/.local/share/jotdown for shared_preferences equivalent
+        // Use ~/.local/share/com.example.jotdown to match GUI app directory
         final homeDir = Platform.environment['HOME'] ?? '';
-        directoryPath = '$homeDir/.local/share/jotdown';
+        directoryPath = '$homeDir/.local/share/com.example.jotdown';
         break;
     }
 
@@ -188,7 +343,7 @@ class CLINotesService {
         return settings.customPath;
       default:
         final homeDir = Platform.environment['HOME'] ?? '';
-        return '$homeDir/.local/share/jotdown';
+        return '$homeDir/.local/share/com.example.jotdown';
     }
   }
 }

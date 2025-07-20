@@ -46,7 +46,7 @@ Each package now includes:
 
 ## 📦 Release Assets Available
 - `jotdown-0.1.2-linux-amd64.deb` - Debian/Ubuntu package
-- `jotdown-0.1.2-linux-amd64.rpm` - RedHat/Fedora package  
+- `jotdown-0.1.2-linux-amd64.rpm` - RedHat/Fedora package
 - `jotdown-0.1.2-linux-x86_64.tar.gz` - Portable archive
 
 All packages contain the fixed application with working CLI setup!

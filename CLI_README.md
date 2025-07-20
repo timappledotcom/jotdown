@@ -127,14 +127,16 @@ jd settings --theme dark     # Always dark theme
 
 ## Data Sharing
 
-The CLI and desktop application share the same data files. Notes created in one interface are immediately available in the other. Settings changes also sync between both interfaces.
+The CLI and desktop application share the same data files and settings. Notes created in one interface are immediately available in the other. Settings changes also sync between both interfaces in real-time.
 
 ### Storage Locations
 
-- **shared_preferences**: CLI uses `~/.config/jotdown/` (Desktop uses system preference store)
+- **shared_preferences**: Both CLI and desktop use `~/.local/share/com.example.jotdown/` (SharedPreferences format)
 - **documents**: `~/Documents/jotDown/`
 - **home**: `~/jotDown/`
 - **custom**: User-specified directory
+
+The CLI automatically detects and uses the same storage location configured in the desktop application.
 
 ## Editor Integration
 
