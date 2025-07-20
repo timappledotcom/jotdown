@@ -5,7 +5,7 @@
 
 set -e
 
-echo "Installing jotDown v0.1.5..."
+echo "Installing jotDown v0.1.6..."
 
 # Check if we're in the extracted directory
 if [ ! -f "jotdown" ] || [ ! -d "bin" ]; then

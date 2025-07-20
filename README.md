@@ -216,13 +216,13 @@ Exciting features coming to jotDown:
 - **Android App**: Native Android application for seamless mobile note-taking
 - **Cross-platform Sync**: Keep your notes synchronized across Linux desktop and Android
 
-### 🔄 P2P Synchronization  
+### 🔄 P2P Synchronization
 - **Peer-to-Peer Sync**: Direct device-to-device synchronization without cloud dependencies
 - **End-to-End Encryption**: Secure sync with client-side encryption
 - **Local Network Discovery**: Automatic detection of other jotDown instances on your network
 
 ### 🔒 Enhanced Security
-- **Hardware Key Support**: Integration with security keys for authentication  
+- **Hardware Key Support**: Integration with security keys for authentication
 - **Biometric Authentication**: Fingerprint/face unlock support on supported devices
 - **Secure Vault Mode**: Isolated encrypted containers for ultra-sensitive notes
 

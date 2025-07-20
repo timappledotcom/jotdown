@@ -202,7 +202,7 @@ void _showHelp(ArgParser parser) {
 }
 
 void _showVersion() {
-  print('jotDown CLI v0.1.5');
+  print('jotDown CLI v0.1.6');
 }
 
 class JotDownCLI {

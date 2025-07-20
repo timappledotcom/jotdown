@@ -51,7 +51,8 @@ class _NotesListScreenState extends State<NotesListScreen>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
     // Refresh when app regains focus or becomes active
-    if (state == AppLifecycleState.resumed || state == AppLifecycleState.inactive) {
+    if (state == AppLifecycleState.resumed ||
+        state == AppLifecycleState.inactive) {
       print('App lifecycle changed to $state, refreshing notes...');
       _forceRefresh();
     }
@@ -90,20 +91,24 @@ class _NotesListScreenState extends State<NotesListScreen>
       // Also check if the number of notes changed as a fallback
       final currentSettings = await _settingsService.loadSettings();
       String? password;
-      if (currentSettings.encryptionEnabled && currentSettings.passwordHash != null) {
+      if (currentSettings.encryptionEnabled &&
+          currentSettings.passwordHash != null) {
         if (PasswordManager.isAuthenticated) {
           password = PasswordManager.currentPassword;
         }
       }
 
-      final currentNotes = await _notesService.loadNotes(currentSettings, password);
+      final currentNotes =
+          await _notesService.loadNotes(currentSettings, password);
       final notesCountChanged = currentNotes.length != _notes.length;
 
       // If file was modified since last check or note count changed, refresh notes
       if ((currentModified != null &&
-          (_lastModified == null || currentModified.isAfter(_lastModified!))) ||
+              (_lastModified == null ||
+                  currentModified.isAfter(_lastModified!))) ||
           notesCountChanged) {
-        print('Change detected: file modified or note count changed (${_notes.length} -> ${currentNotes.length})');
+        print(
+            'Change detected: file modified or note count changed (${_notes.length} -> ${currentNotes.length})');
         _lastModified = currentModified;
         if (mounted) {
           await _refreshNotes();
@@ -201,7 +206,7 @@ class _NotesListScreenState extends State<NotesListScreen>
           _settings = settings;
           _notes = notes..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
         });
-        
+
         // Show feedback that refresh completed
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
