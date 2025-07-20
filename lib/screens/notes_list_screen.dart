@@ -269,59 +269,98 @@ class _NotesListScreenState extends State<NotesListScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.help_outline),
-            SizedBox(width: 8),
-            Text('How to use jotDown'),
+            Icon(Icons.help_outline, color: Theme.of(context).primaryColor),
+            const SizedBox(width: 8),
+            const Text('How to use jotDown'),
           ],
         ),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'Creating Notes:',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const Text('• Tap the + button to create a new note'),
-              const Text('• Use Markdown formatting for rich text'),
-              const Text('• Notes are automatically saved'),
-              const SizedBox(height: 16),
-              const Text(
-                'Using Tags:',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const Text('• Add tags anywhere in your note using #tagname'),
-              const Text('• Example: "Meeting about #work and #planning"'),
-              const Text('• Tags appear as badges on note cards'),
-              const Text('• Use the dropdown above to filter by tag'),
-              const SizedBox(height: 16),
-              const Text(
-                'Searching:',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const Text('• Use the search bar to find notes by content'),
-              const Text('• Combine with tag filtering for precise results'),
-              const Text('• Search works across both titles and content'),
-              const SizedBox(height: 16),
-              const Text(
-                'Command Line:',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const Text('• Use "jd" command in terminal for CLI access'),
-              const Text('• CLI and GUI share the same notes'),
-              const Text('• Type "jd --help" for full CLI documentation'),
-              const SizedBox(height: 16),
-              const Text(
-                'Settings:',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const Text('• Configure storage location and themes'),
-              const Text('• Enable encryption for sensitive notes'),
-              const Text('• Export and migrate your notes'),
-            ],
+        content: SizedBox(
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildHelpSection(
+                  '📝 Creating Notes',
+                  [
+                    'Tap the + button to create a new note',
+                    'Use Markdown formatting for rich text',
+                    'Notes are automatically saved as you type',
+                    'Tap any note to open and edit it',
+                  ],
+                ),
+                _buildHelpSection(
+                  '🏷️ Using Tags',
+                  [
+                    'Add tags anywhere in your note using #tagname',
+                    'Example: "Meeting about #work and #planning"',
+                    'Tags appear as colored badges on note cards',
+                    'Use the dropdown filter to show only tagged notes',
+                    'No spaces allowed in tag names',
+                  ],
+                ),
+                _buildHelpSection(
+                  '🔍 Searching & Filtering',
+                  [
+                    'Use the search bar to find notes by content',
+                    'Search works across both titles and note content',
+                    'Combine text search with tag filtering',
+                    'Both filters work together for precise results',
+                  ],
+                ),
+                _buildHelpSection(
+                  '⌨️ Command Line Interface',
+                  [
+                    'Use "jd" command in terminal for CLI access',
+                    'CLI and GUI share the same notes seamlessly',
+                    'Type "jd --help" for full CLI documentation',
+                    'Perfect for automation and quick note-taking',
+                  ],
+                ),
+                _buildHelpSection(
+                  '⚙️ Settings & Features',
+                  [
+                    'Click the gear icon to access settings',
+                    'Choose your preferred storage location',
+                    'Enable encryption for sensitive notes',
+                    'Switch between light, dark, and system themes',
+                    'Export and migrate your notes easily',
+                  ],
+                ),
+                Container(
+                  margin: const EdgeInsets.only(top: 16),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.lightbulb_outline,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Pro tip: Tags are case-insensitive and automatically extracted from your note content!',
+                          style: TextStyle(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onPrimaryContainer,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         actions: [
@@ -331,6 +370,38 @@ class _NotesListScreenState extends State<NotesListScreen>
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildHelpSection(String title, List<String> items) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
+        ),
+        const SizedBox(height: 4),
+        ...items.map((item) => Padding(
+              padding: const EdgeInsets.only(left: 8, bottom: 2),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('• ', style: TextStyle(fontSize: 12)),
+                  Expanded(
+                    child: Text(
+                      item,
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+            )),
+        const SizedBox(height: 12),
+      ],
     );
   }
 
