@@ -50,15 +50,16 @@ class _NotesListScreenState extends State<NotesListScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    // Refresh when app regains focus
-    if (state == AppLifecycleState.resumed) {
+    // Refresh when app regains focus or becomes active
+    if (state == AppLifecycleState.resumed || state == AppLifecycleState.inactive) {
+      print('App lifecycle changed to $state, refreshing notes...');
       _refreshNotes();
     }
   }
 
   void _startAutoRefresh() {
-    // Check for changes every 3 seconds
-    _refreshTimer = Timer.periodic(const Duration(seconds: 3), (_) {
+    // Check for changes every 1 second for better responsiveness
+    _refreshTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       _checkForChanges();
     });
   }
@@ -86,18 +87,32 @@ class _NotesListScreenState extends State<NotesListScreen>
         }
       }
 
-      // If file was modified since last check, refresh notes
-      if (currentModified != null &&
-          (_lastModified == null || currentModified.isAfter(_lastModified!))) {
+      // Also check if the number of notes changed as a fallback
+      final currentSettings = await _settingsService.loadSettings();
+      String? password;
+      if (currentSettings.encryptionEnabled && currentSettings.passwordHash != null) {
+        if (PasswordManager.isAuthenticated) {
+          password = PasswordManager.currentPassword;
+        }
+      }
+
+      final currentNotes = await _notesService.loadNotes(currentSettings, password);
+      final notesCountChanged = currentNotes.length != _notes.length;
+
+      // If file was modified since last check or note count changed, refresh notes
+      if ((currentModified != null &&
+          (_lastModified == null || currentModified.isAfter(_lastModified!))) ||
+          notesCountChanged) {
+        print('Change detected: file modified or note count changed (${_notes.length} -> ${currentNotes.length})');
         _lastModified = currentModified;
         if (mounted) {
-          _refreshNotes();
+          await _refreshNotes();
         }
       } else if (_lastModified == null && currentModified != null) {
         _lastModified = currentModified;
       }
     } catch (e) {
-      // Ignore errors in background checking
+      print('Error checking for changes: $e');
     }
   }
 
