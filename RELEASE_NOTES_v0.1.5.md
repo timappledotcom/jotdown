@@ -9,7 +9,7 @@
 - **Complete**: Coverage of all features including tags, CLI, searching, and settings
 
 ### 🔄 **Real-time Sync Enhancements**
-- **Faster Sync**: Reduced check interval from 3s to 1s for immediate responsiveness  
+- **Faster Sync**: Reduced check interval from 3s to 1s for immediate responsiveness
 - **Dual Detection**: File modification timestamps + note count changes for reliability
 - **Better Lifecycle**: Enhanced app focus/unfocus sync behavior
 - **Robust Error Handling**: Improved exception management and debug logging
@@ -26,7 +26,7 @@
 This is a complete rebuild to ensure all recent improvements are properly packaged:
 
 - **DEB Package** (`jotdown-v0.1.5-amd64.deb`): For Ubuntu/Debian systems
-- **TAR.XZ Archive** (`jotdown-v0.1.5-linux-x64.tar.xz`): Universal Linux archive  
+- **TAR.XZ Archive** (`jotdown-v0.1.5-linux-x64.tar.xz`): Universal Linux archive
 - **AppImage** (`jotdown-v0.1.5-linux-x86_64.AppImage`): Portable Linux application
 
 ## 🚀 **Installation**
@@ -73,7 +73,7 @@ Your notes, settings, and data will be preserved.
 - Examples for tag usage and CLI commands
 - Beginner-friendly explanations
 
-### 🔄 **Real-time Sync** 
+### 🔄 **Real-time Sync**
 - Add notes from CLI: `jd add -t "Test" -c "Content with #tags"`
 - See them appear in open GUI within 1-2 seconds
 - No need to restart or manually refresh
@@ -97,7 +97,7 @@ Your notes, settings, and data will be preserved.
 
 All components now consistently use v0.1.5:
 - Flutter GUI application
-- Dart CLI tool  
+- Dart CLI tool
 - Package metadata
 - Installation scripts
 - Desktop integration files
