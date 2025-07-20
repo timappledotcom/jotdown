@@ -22,9 +22,11 @@ jotDown is a beautiful, feature-rich notes application for Linux that combines t
 - **Responsive Layout**: Optimized for various screen sizes
 
 ### 🔐 Security & Privacy
-- **AES-256 Encryption**: Secure your sensitive notes with strong encryption
+- **AES-256 Encryption**: Secure your sensitive notes with strong encryption ⚠️ **(Experimental)**
 - **Password Protection**: Optional password-based access control
 - **Local Storage**: Your data stays on your machine - no cloud required
+
+> ⚠️ **Note**: Encryption features are currently experimental. While we use industry-standard AES-256 encryption, please ensure you have backups of important data and test thoroughly before relying on encryption in production environments.
 
 ### 📂 Flexible Storage
 - **Multiple Locations**: Choose where your notes are stored
@@ -205,6 +207,32 @@ We welcome contributions! Please feel free to:
 - Suggest new features
 - Submit pull requests
 - Improve documentation
+
+## 🚀 Roadmap
+
+Exciting features coming to jotDown:
+
+### 📱 Mobile Support
+- **Android App**: Native Android application for seamless mobile note-taking
+- **Cross-platform Sync**: Keep your notes synchronized across Linux desktop and Android
+
+### 🔄 P2P Synchronization  
+- **Peer-to-Peer Sync**: Direct device-to-device synchronization without cloud dependencies
+- **End-to-End Encryption**: Secure sync with client-side encryption
+- **Local Network Discovery**: Automatic detection of other jotDown instances on your network
+
+### 🔒 Enhanced Security
+- **Hardware Key Support**: Integration with security keys for authentication  
+- **Biometric Authentication**: Fingerprint/face unlock support on supported devices
+- **Secure Vault Mode**: Isolated encrypted containers for ultra-sensitive notes
+
+### 📊 Advanced Features
+- **Rich Media Support**: Enhanced image, audio, and file attachment handling
+- **Collaborative Editing**: Real-time collaborative editing capabilities
+- **Advanced Search**: Full-text search with filters, tags, and smart suggestions
+- **Plugin System**: Extensible architecture for community plugins
+
+> 💡 Have ideas for other features? [Share them in our discussions](https://github.com/timappledotcom/jotdown/discussions)!
 
 ## 📄 License
 
