@@ -1,0 +1,22 @@
+Package: jotdown
+Version: 0.2.0
+Section: utils
+Priority: optional
+Architecture: amd64
+Depends: libc6, libgtk-3-0, libglib2.0-0
+Maintainer: Tim Apple <tim@timapple.com>
+Description: Simple and elegant notes application for Linux
+ jotDown is a beautiful, feature-rich notes application for Linux that combines
+ the power of Markdown with the convenience of both a desktop GUI and command-line
+ interface. Whether you prefer clicking or typing, jotDown adapts to your workflow.
+ .
+ Features:
+ - Modern Ubuntu-native design with Yaru theming
+ - Hierarchical tag sidebar for advanced note organization
+ - Documents folder storage for easy file system access
+ - Markdown support with live preview
+ - Command-line interface for automation
+ - Encryption support for sensitive notes
+ - Multiple storage locations (Documents, Home, Custom)
+ - Cross-platform compatibility
+Homepage: https://github.com/timappledotcom/jotdown

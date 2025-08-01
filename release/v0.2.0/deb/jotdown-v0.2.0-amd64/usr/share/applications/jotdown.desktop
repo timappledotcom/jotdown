@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=jotDown
+Comment=Simple and elegant notes application
+Exec=/opt/jotdown/jotdown
+Icon=/opt/jotdown/data/flutter_assets/assets/icons/jotdown.svg
+Terminal=false
+Type=Application
+Categories=Office;TextEditor;Utility;
+Keywords=notes;markdown;text;editor;cli;
+StartupNotify=true
+StartupWMClass=jotdown
