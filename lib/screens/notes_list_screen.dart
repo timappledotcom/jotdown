@@ -29,7 +29,8 @@ class _NotesListScreenState extends State<NotesListScreen>
   AppSettings _settings = AppSettings();
   bool _isLoading = true;
   String _searchQuery = '';
-  String? _selectedTag;
+  List<String> _selectedTags = []; // Changed to support hierarchical tag selection
+  bool _showSidebar = true; // Show sidebar by default
   Timer? _refreshTimer;
   DateTime? _lastModified;
 
@@ -371,7 +372,9 @@ class _NotesListScreenState extends State<NotesListScreen>
                     'Add tags anywhere in your note using #tagname',
                     'Example: "Meeting about #work and #planning"',
                     'Tags appear as colored badges on note cards',
-                    'Use the dropdown filter to show only tagged notes',
+                    'Click the tag icon in the toolbar to open the tags sidebar',
+                    'Select multiple tags to refine your search hierarchically',
+                    'Use "Back" to remove the last tag or "Clear All" to reset',
                     'No spaces allowed in tag names',
                   ],
                 ),
@@ -380,8 +383,10 @@ class _NotesListScreenState extends State<NotesListScreen>
                   [
                     'Use the search bar to find notes by content',
                     'Search works across both titles and note content',
-                    'Combine text search with tag filtering',
-                    'Both filters work together for precise results',
+                    'Open the tags sidebar for hierarchical tag filtering',
+                    'Select multiple tags to narrow down results progressively',
+                    'Combine text search with tag filtering for precise results',
+                    'Tag counts show how many notes match each filter',
                   ],
                 ),
                 _buildHelpSection(
@@ -481,10 +486,11 @@ class _NotesListScreenState extends State<NotesListScreen>
   List<Note> get _filteredNotes {
     var filteredNotes = _notes;
 
-    // Filter by selected tag first
-    if (_selectedTag != null && _selectedTag!.isNotEmpty) {
-      filteredNotes =
-          filteredNotes.where((note) => note.hasTag(_selectedTag!)).toList();
+    // Filter by selected tags (all selected tags must be present)
+    if (_selectedTags.isNotEmpty) {
+      filteredNotes = filteredNotes.where((note) {
+        return _selectedTags.every((tag) => note.hasTag(tag));
+      }).toList();
     }
 
     // Then filter by search query
@@ -505,6 +511,42 @@ class _NotesListScreenState extends State<NotesListScreen>
     }
     final tagList = allTags.toList()..sort();
     return tagList;
+  }
+
+  /// Get tags that appear in the currently filtered notes (for refinement)
+  List<String> get _refinementTags {
+    if (_selectedTags.isEmpty) return _availableTags;
+    
+    final Set<String> refinementTags = {};
+    for (final note in _filteredNotes) {
+      refinementTags.addAll(note.tags);
+    }
+    
+    // Remove already selected tags
+    refinementTags.removeWhere((tag) => _selectedTags.contains(tag));
+    
+    final tagList = refinementTags.toList()..sort();
+    return tagList;
+  }
+
+  /// Get tag counts for display
+  Map<String, int> get _tagCounts {
+    final Map<String, int> counts = {};
+    final tagsToCount = _selectedTags.isEmpty ? _availableTags : _refinementTags;
+    
+    for (final tag in tagsToCount) {
+      counts[tag] = _notes.where((note) {
+        // For refinement tags, count notes that have all selected tags plus this tag
+        if (_selectedTags.isNotEmpty) {
+          return _selectedTags.every((selectedTag) => note.hasTag(selectedTag)) && 
+                 note.hasTag(tag);
+        }
+        // For initial tags, just count notes with this tag
+        return note.hasTag(tag);
+      }).length;
+    }
+    
+    return counts;
   }
 
   Future<String> _getSalt(AppSettings settings) async {
@@ -564,6 +606,29 @@ class _NotesListScreenState extends State<NotesListScreen>
           ],
         ),
         actions: [
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              color: _showSidebar 
+                  ? Theme.of(context).colorScheme.primaryContainer
+                  : null,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: IconButton(
+              icon: Icon(
+                _showSidebar ? Icons.label : Icons.label_outline,
+                color: _showSidebar 
+                    ? Theme.of(context).colorScheme.onPrimaryContainer
+                    : null,
+              ),
+              onPressed: () {
+                setState(() {
+                  _showSidebar = !_showSidebar;
+                });
+              },
+              tooltip: _showSidebar ? 'Hide Tags Sidebar' : 'Show Tags Sidebar',
+            ),
+          ),
           IconButton(
             icon: const Icon(Icons.help_outline),
             onPressed: _showHelpDialog,
@@ -583,7 +648,7 @@ class _NotesListScreenState extends State<NotesListScreen>
           ),
         ],
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(110),
+          preferredSize: const Size.fromHeight(60),
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(
@@ -611,65 +676,6 @@ class _NotesListScreenState extends State<NotesListScreen>
                     });
                   },
                 ),
-                const SizedBox(height: 8),
-                // Tag filter dropdown with Ubuntu styling
-                Row(
-                  children: [
-                    const Icon(Icons.label_outline, size: 20),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: DropdownButtonFormField<String?>(
-                        value: _selectedTag,
-                        decoration: InputDecoration(
-                          hintText: 'Filter by tag...',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          filled: true,
-                          fillColor: Theme.of(context).colorScheme.surface,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
-                          ),
-                        ),
-                        items: [
-                          const DropdownMenuItem<String?>(
-                            value: null,
-                            child: Text('All notes'),
-                          ),
-                          ..._availableTags
-                              .map((tag) => DropdownMenuItem<String?>(
-                                    value: tag,
-                                    child: Row(
-                                      children: [
-                                        const Icon(Icons.label, size: 16),
-                                        const SizedBox(width: 8),
-                                        Text(tag),
-                                      ],
-                                    ),
-                                  )),
-                        ],
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedTag = value;
-                          });
-                        },
-                      ),
-                    ),
-                    if (_selectedTag != null) ...[
-                      const SizedBox(width: 8),
-                      IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          setState(() {
-                            _selectedTag = null;
-                          });
-                        },
-                        tooltip: 'Clear filter',
-                      ),
-                    ],
-                  ],
-                ),
               ],
             ),
           ),
@@ -677,7 +683,14 @@ class _NotesListScreenState extends State<NotesListScreen>
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : _buildNotesList(),
+          : Row(
+              children: [
+                // Tags Sidebar
+                if (_showSidebar) _buildTagsSidebar(),
+                // Main content
+                Expanded(child: _buildNotesList()),
+              ],
+            ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _openNoteEditor(),
         tooltip: 'Add Note',
@@ -701,15 +714,26 @@ class _NotesListScreenState extends State<NotesListScreen>
             ),
             const SizedBox(height: 16),
             Text(
-              _searchQuery.isEmpty
-                  ? 'No notes yet.\nTap + to create your first note!'
-                  : 'No notes found matching "$_searchQuery"',
+              _getEmptyStateMessage(),
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 18,
                 color: Theme.of(context).colorScheme.outline,
               ),
             ),
+            if (_selectedTags.isNotEmpty || _searchQuery.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: () {
+                  setState(() {
+                    _selectedTags.clear();
+                    _searchQuery = '';
+                  });
+                },
+                icon: const Icon(Icons.clear_all),
+                label: const Text('Clear Filters'),
+              ),
+            ],
           ],
         ),
       );
@@ -836,6 +860,282 @@ class _NotesListScreenState extends State<NotesListScreen>
         ),
       ),
     );
+  }
+
+  Widget _buildTagsSidebar() {
+    final tagCounts = _tagCounts;
+    final tagsToShow = _selectedTags.isEmpty ? _availableTags : _refinementTags;
+
+    return Container(
+      width: 280,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        border: Border(
+          right: BorderSide(
+            color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+            width: 1,
+          ),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primaryContainer,
+              border: Border(
+                bottom: BorderSide(
+                  color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                  width: 1,
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.label,
+                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Tags',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Selected tags breadcrumb
+          if (_selectedTags.isNotEmpty) ...[
+            Container(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Selected:',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 4,
+                    runSpacing: 4,
+                    children: _selectedTags.asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final tag = entry.value;
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '#$tag',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Theme.of(context).colorScheme.onPrimary,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _selectedTags.removeRange(index, _selectedTags.length);
+                                });
+                              },
+                              child: Icon(
+                                Icons.close,
+                                size: 14,
+                                color: Theme.of(context).colorScheme.onPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      if (_selectedTags.length > 1)
+                        TextButton.icon(
+                          onPressed: () {
+                            setState(() {
+                              _selectedTags.removeLast();
+                            });
+                          },
+                          icon: const Icon(Icons.arrow_back, size: 16),
+                          label: const Text('Back'),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            minimumSize: const Size(0, 32),
+                          ),
+                        ),
+                      const SizedBox(width: 8),
+                      TextButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            _selectedTags.clear();
+                          });
+                        },
+                        icon: const Icon(Icons.clear_all, size: 16),
+                        label: const Text('Clear All'),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          minimumSize: const Size(0, 32),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Divider(
+              height: 1,
+              color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+            ),
+          ],
+
+          // Available tags list
+          Expanded(
+            child: tagsToShow.isEmpty
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Text(
+                        _selectedTags.isEmpty
+                            ? 'No tags found in your notes.\nAdd tags to your notes using #tagname'
+                            : 'No additional tags available\nfor further refinement.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    itemCount: tagsToShow.length,
+                    itemBuilder: (context, index) {
+                      final tag = tagsToShow[index];
+                      final count = tagCounts[tag] ?? 0;
+                      
+                      return ListTile(
+                        dense: true,
+                        leading: Icon(
+                          Icons.label,
+                          size: 18,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        title: Text(
+                          '#$tag',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        trailing: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primaryContainer,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            count.toString(),
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: Theme.of(context).colorScheme.onPrimaryContainer,
+                            ),
+                          ),
+                        ),
+                        onTap: () {
+                          setState(() {
+                            _selectedTags.add(tag);
+                          });
+                        },
+                      );
+                    },
+                  ),
+          ),
+
+          // Footer with stats
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceVariant,
+              border: Border(
+                top: BorderSide(
+                  color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                  width: 1,
+                ),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '${_filteredNotes.length} notes',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                Text(
+                  '${tagsToShow.length} tags',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getEmptyStateMessage() {
+    if (_notes.isEmpty) {
+      return 'No notes yet.\nTap + to create your first note!';
+    }
+    
+    if (_selectedTags.isNotEmpty && _searchQuery.isNotEmpty) {
+      return 'No notes found with tags ${_selectedTags.map((t) => '#$t').join(', ')}\nand matching "$_searchQuery"';
+    }
+    
+    if (_selectedTags.isNotEmpty) {
+      return 'No notes found with tags:\n${_selectedTags.map((t) => '#$t').join(', ')}';
+    }
+    
+    if (_searchQuery.isNotEmpty) {
+      return 'No notes found matching "$_searchQuery"';
+    }
+    
+    return 'No notes to display';
   }
 
   String _formatDate(DateTime date) {
