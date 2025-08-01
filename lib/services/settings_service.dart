@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:path_provider/path_provider.dart';
 import '../models/app_settings.dart';
 
 class SettingsService {
@@ -34,54 +34,37 @@ class SettingsService {
     }
   }
 
-  Future<String> getDefaultNotesDirectory() async {
-    try {
-      final directory = await getApplicationDocumentsDirectory();
-      final notesDir = Directory('${directory.path}/jotDown');
-      if (!await notesDir.exists()) {
-        await notesDir.create(recursive: true);
-      }
-      return notesDir.path;
-    } catch (e) {
-      print('Error getting default directory: $e');
-      final homeDir = Platform.environment['HOME'] ?? '';
-      return '$homeDir/Documents/jotDown';
-    }
-  }
-
+  /// Get available storage locations for the current platform
   Future<List<String>> getAvailableStorageLocations() async {
-    final locations = <String>[];
-
-    // Always available
-    locations.add('shared_preferences');
-
-    // Try to get common directories
+    final locations = <String>['shared_preferences'];
+    
+    // Add documents folder option
     try {
       await getApplicationDocumentsDirectory();
       locations.add('documents');
     } catch (e) {
       print('Documents directory not available: $e');
     }
-
-    try {
+    
+    // Add home directory option (Linux/macOS)
+    if (Platform.isLinux || Platform.isMacOS) {
       final homeDir = Platform.environment['HOME'];
-      if (homeDir != null) {
+      if (homeDir != null && homeDir.isNotEmpty) {
         locations.add('home');
       }
-    } catch (e) {
-      print('Home directory not available: $e');
     }
-
-    // Custom location is always an option
+    
+    // Always add custom option
     locations.add('custom');
-
+    
     return locations;
   }
 
+  /// Get display name for storage location
   String getStorageLocationDisplayName(String location) {
     switch (location) {
       case 'shared_preferences':
-        return 'App Data (Shared Preferences)';
+        return 'App Data';
       case 'documents':
         return 'Documents Folder';
       case 'home':
@@ -89,7 +72,31 @@ class SettingsService {
       case 'custom':
         return 'Custom Location';
       default:
-        return location;
+        return 'Unknown';
+    }
+  }
+
+  /// Get the actual storage path for a given location
+  Future<String> getStoragePath(AppSettings settings) async {
+    switch (settings.storageLocation) {
+      case 'shared_preferences':
+        return 'Stored in app data (no file path)';
+      case 'documents':
+        try {
+          final documentsDir = await getApplicationDocumentsDirectory();
+          return '${documentsDir.path}/jotdown/';
+        } catch (e) {
+          return 'Documents/jotdown/';
+        }
+      case 'home':
+        final homeDir = Platform.environment['HOME'] ?? '';
+        return '$homeDir/jotdown/';
+      case 'custom':
+        return settings.customPath.isNotEmpty
+            ? '${settings.customPath}/jotdown/'
+            : 'No path selected';
+      default:
+        return 'Unknown location';
     }
   }
 }

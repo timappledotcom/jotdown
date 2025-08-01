@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:yaru/yaru.dart';
 import 'dart:io';
 import 'dart:async';
 import '../models/note.dart';
@@ -343,8 +344,8 @@ class _NotesListScreenState extends State<NotesListScreen>
       builder: (context) => AlertDialog(
         title: Row(
           children: [
-            Icon(Icons.help_outline, color: Theme.of(context).primaryColor),
-            const SizedBox(width: 8),
+            Icon(Icons.help_outline, color: Theme.of(context).colorScheme.primary),
+            const SizedBox(width: 12),
             const Text('How to use jotDown'),
           ],
         ),
@@ -416,7 +417,7 @@ class _NotesListScreenState extends State<NotesListScreen>
                         color: Theme.of(context).colorScheme.onPrimaryContainer,
                         size: 20,
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           'Pro tip: Tags are case-insensitive and automatically extracted from your note content!',
@@ -543,7 +544,25 @@ class _NotesListScreenState extends State<NotesListScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('jotDown'),
+        title: Row(
+          children: [
+            Container(
+              width: 24,
+              height: 24,
+              margin: const EdgeInsets.only(right: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: const Icon(
+                Icons.edit_note,
+                size: 16,
+                color: Color(0xFFE95420),
+              ),
+            ),
+            const Text('jotDown'),
+          ],
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.help_outline),
@@ -569,14 +588,20 @@ class _NotesListScreenState extends State<NotesListScreen>
             padding: const EdgeInsets.all(8.0),
             child: Column(
               children: [
-                // Search bar
+                // Search bar with Ubuntu styling
                 TextField(
                   decoration: InputDecoration(
                     hintText: 'Search notes...',
                     prefixIcon: const Icon(Icons.search),
-                    border: const OutlineInputBorder(),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                     filled: true,
                     fillColor: Theme.of(context).colorScheme.surface,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                   ),
                   style:
                       TextStyle(color: Theme.of(context).colorScheme.onSurface),
@@ -587,7 +612,7 @@ class _NotesListScreenState extends State<NotesListScreen>
                   },
                 ),
                 const SizedBox(height: 8),
-                // Tag filter dropdown
+                // Tag filter dropdown with Ubuntu styling
                 Row(
                   children: [
                     const Icon(Icons.label_outline, size: 20),
@@ -597,11 +622,15 @@ class _NotesListScreenState extends State<NotesListScreen>
                         value: _selectedTag,
                         decoration: InputDecoration(
                           hintText: 'Filter by tag...',
-                          border: const OutlineInputBorder(),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                           filled: true,
                           fillColor: Theme.of(context).colorScheme.surface,
                           contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 8),
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
                         ),
                         items: [
                           const DropdownMenuItem<String?>(
@@ -611,7 +640,13 @@ class _NotesListScreenState extends State<NotesListScreen>
                           ..._availableTags
                               .map((tag) => DropdownMenuItem<String?>(
                                     value: tag,
-                                    child: Text('#$tag'),
+                                    child: Row(
+                                      children: [
+                                        const Icon(Icons.label, size: 16),
+                                        const SizedBox(width: 8),
+                                        Text(tag),
+                                      ],
+                                    ),
                                   )),
                         ],
                         onChanged: (value) {
@@ -659,14 +694,21 @@ class _NotesListScreenState extends State<NotesListScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.note_add, size: 64, color: Colors.grey),
+            Icon(
+              Icons.note_add,
+              size: 64,
+              color: Theme.of(context).colorScheme.outline,
+            ),
             const SizedBox(height: 16),
             Text(
               _searchQuery.isEmpty
                   ? 'No notes yet.\nTap + to create your first note!'
                   : 'No notes found matching "$_searchQuery"',
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 18, color: Colors.grey),
+              style: TextStyle(
+                fontSize: 18,
+                color: Theme.of(context).colorScheme.outline,
+              ),
             ),
           ],
         ),
@@ -689,13 +731,29 @@ class _NotesListScreenState extends State<NotesListScreen>
         : note.content;
 
     return Card(
-      elevation: 2,
+      elevation: 1, // Ubuntu prefers subtle elevation
       margin: const EdgeInsets.symmetric(vertical: 4.0),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8), // Ubuntu's preferred radius
+      ),
       child: ListTile(
         contentPadding: const EdgeInsets.all(16.0),
+        leading: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primaryContainer,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            Icons.edit_note,
+            color: Theme.of(context).colorScheme.onPrimaryContainer,
+            size: 20,
+          ),
+        ),
         title: Text(
           note.title,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500), // Ubuntu uses medium weight
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -759,6 +817,7 @@ class _NotesListScreenState extends State<NotesListScreen>
         ),
         onTap: () => _openNoteEditor(note),
         trailing: PopupMenuButton<String>(
+          icon: const Icon(Icons.more_vert),
           onSelected: (value) {
             if (value == 'delete') {
               _deleteNote(note);

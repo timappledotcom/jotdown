@@ -162,11 +162,11 @@ class NotesService {
     switch (settings.storageLocation) {
       case 'documents':
         final documentsDir = await getApplicationDocumentsDirectory();
-        directoryPath = '${documentsDir.path}/jotDown';
+        directoryPath = '${documentsDir.path}/jotdown';
         break;
       case 'home':
         final homeDir = Platform.environment['HOME'] ?? '';
-        directoryPath = '$homeDir/jotDown';
+        directoryPath = '$homeDir/jotdown';
         break;
       case 'custom':
         directoryPath = settings.customPath;
@@ -174,7 +174,7 @@ class NotesService {
       default:
         // Fallback to documents
         final documentsDir = await getApplicationDocumentsDirectory();
-        directoryPath = '${documentsDir.path}/jotDown';
+        directoryPath = '${documentsDir.path}/jotdown';
         break;
     }
 

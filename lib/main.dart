@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:yaru/yaru.dart';
 import 'screens/notes_list_screen.dart';
 import 'models/app_settings.dart';
 import 'services/settings_service.dart';
@@ -61,6 +62,8 @@ class _JotDownAppState extends State<JotDownApp> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return MaterialApp(
+        theme: yaruLight,
+        darkTheme: yaruDark,
         home: Scaffold(
           body: Center(
             child: Column(
@@ -78,65 +81,111 @@ class _JotDownAppState extends State<JotDownApp> {
 
     return MaterialApp(
       title: 'jotDown',
-      theme: _buildLightTheme(),
-      darkTheme: _buildDarkTheme(),
+      theme: _buildUbuntuLightTheme(),
+      darkTheme: _buildUbuntuDarkTheme(),
       themeMode: _getThemeMode(),
       home: NotesListScreen(onSettingsChanged: _updateSettings),
       debugShowCheckedModeBanner: false,
     );
   }
 
-  ThemeData _buildLightTheme() {
-    return ThemeData(
-      primarySwatch: Colors.blue,
-      useMaterial3: true,
-      brightness: Brightness.light,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: Colors.blue,
-        brightness: Brightness.light,
+  ThemeData _buildUbuntuLightTheme() {
+    return yaruLight.copyWith(
+      // Use Ubuntu's signature orange accent color
+      colorScheme: yaruLight.colorScheme.copyWith(
+        primary: const Color(0xFFE95420), // Ubuntu orange
+        secondary: const Color(0xFF77216F), // Ubuntu purple
       ),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: Colors.blue,
+      
+      // Ubuntu-style app bar
+      appBarTheme: yaruLight.appBarTheme.copyWith(
+        backgroundColor: const Color(0xFFE95420),
         foregroundColor: Colors.white,
-        elevation: 4,
+        elevation: 0, // Ubuntu prefers flat design
+        centerTitle: false, // Ubuntu apps typically left-align titles
       ),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: Colors.blue,
+      
+      // Ubuntu-style floating action button
+      floatingActionButtonTheme: yaruLight.floatingActionButtonTheme.copyWith(
+        backgroundColor: const Color(0xFFE95420),
         foregroundColor: Colors.white,
+        elevation: 2, // Subtle elevation
+      ),
+      
+      // Ubuntu-style cards and surfaces
+      cardTheme: yaruLight.cardTheme.copyWith(
+        elevation: 1,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8), // Ubuntu's preferred radius
+        ),
+      ),
+      
+      // Ubuntu-style input decoration
+      inputDecorationTheme: yaruLight.inputDecorationTheme.copyWith(
+        filled: true,
+        fillColor: yaruLight.colorScheme.surface,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: yaruLight.colorScheme.outline),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: yaruLight.colorScheme.outline),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Color(0xFFE95420), width: 2),
+        ),
       ),
     );
   }
 
-  ThemeData _buildDarkTheme() {
-    return ThemeData(
-      primarySwatch: Colors.blue,
-      useMaterial3: true,
-      brightness: Brightness.dark,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: Colors.blue,
-        brightness: Brightness.dark,
+  ThemeData _buildUbuntuDarkTheme() {
+    return yaruDark.copyWith(
+      // Use Ubuntu's signature colors for dark theme
+      colorScheme: yaruDark.colorScheme.copyWith(
+        primary: const Color(0xFFE95420), // Ubuntu orange
+        secondary: const Color(0xFF77216F), // Ubuntu purple
       ),
-      appBarTheme: AppBarTheme(
-        backgroundColor: Colors.grey[850],
+      
+      // Ubuntu-style dark app bar
+      appBarTheme: yaruDark.appBarTheme.copyWith(
+        backgroundColor: const Color(0xFF2C2C2C), // Ubuntu dark header
         foregroundColor: Colors.white,
-        elevation: 4,
+        elevation: 0,
+        centerTitle: false,
       ),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: Colors.blue,
+      
+      // Ubuntu-style dark floating action button
+      floatingActionButtonTheme: yaruDark.floatingActionButtonTheme.copyWith(
+        backgroundColor: const Color(0xFFE95420),
         foregroundColor: Colors.white,
+        elevation: 2,
       ),
-      scaffoldBackgroundColor: Colors.grey[900],
-      inputDecorationTheme: InputDecorationTheme(
+      
+      // Ubuntu-style dark cards
+      cardTheme: yaruDark.cardTheme.copyWith(
+        elevation: 1,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
+      
+      // Ubuntu-style dark input decoration
+      inputDecorationTheme: yaruDark.inputDecorationTheme.copyWith(
         filled: true,
-        fillColor: Colors.grey[800],
+        fillColor: yaruDark.colorScheme.surface,
         border: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.grey[600]!),
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: yaruDark.colorScheme.outline),
         ),
         enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.grey[600]!),
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: yaruDark.colorScheme.outline),
         ),
         focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.blue[300]!),
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Color(0xFFE95420), width: 2),
         ),
       ),
     );

@@ -4,12 +4,12 @@ part 'app_settings.g.dart';
 
 @JsonSerializable()
 class AppSettings {
-  final String storageLocation;
+  final String storageLocation; // 'shared_preferences', 'documents', 'home', 'custom'
   final bool useCustomLocation;
   final String customPath;
   final String themeMode; // 'system', 'light', 'dark'
   final bool encryptionEnabled;
-  final String? passwordHash; // Store hashed password, not plain text
+  final String? passwordHash;
 
   AppSettings({
     this.storageLocation = 'shared_preferences',
