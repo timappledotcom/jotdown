@@ -62,8 +62,8 @@ class _JotDownAppState extends State<JotDownApp> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return MaterialApp(
-        theme: yaruLight,
-        darkTheme: yaruDark,
+        theme: _buildUbuntuLightTheme(),
+        darkTheme: _buildUbuntuDarkTheme(),
         home: Scaffold(
           body: Center(
             child: Column(
@@ -90,47 +90,50 @@ class _JotDownAppState extends State<JotDownApp> {
   }
 
   ThemeData _buildUbuntuLightTheme() {
-    return yaruLight.copyWith(
+    // Use Yaru light theme as base
+    final baseTheme = yaruLight;
+
+    return baseTheme.copyWith(
       // Use Ubuntu's signature orange accent color
-      colorScheme: yaruLight.colorScheme.copyWith(
+      colorScheme: baseTheme.colorScheme.copyWith(
         primary: const Color(0xFFE95420), // Ubuntu orange
         secondary: const Color(0xFF77216F), // Ubuntu purple
       ),
-      
+
       // Ubuntu-style app bar
-      appBarTheme: yaruLight.appBarTheme.copyWith(
+      appBarTheme: baseTheme.appBarTheme.copyWith(
         backgroundColor: const Color(0xFFE95420),
         foregroundColor: Colors.white,
         elevation: 0, // Ubuntu prefers flat design
         centerTitle: false, // Ubuntu apps typically left-align titles
       ),
-      
+
       // Ubuntu-style floating action button
-      floatingActionButtonTheme: yaruLight.floatingActionButtonTheme.copyWith(
+      floatingActionButtonTheme: baseTheme.floatingActionButtonTheme.copyWith(
         backgroundColor: const Color(0xFFE95420),
         foregroundColor: Colors.white,
         elevation: 2, // Subtle elevation
       ),
-      
+
       // Ubuntu-style cards and surfaces
-      cardTheme: yaruLight.cardTheme.copyWith(
+      cardTheme: baseTheme.cardTheme.copyWith(
         elevation: 1,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8), // Ubuntu's preferred radius
         ),
       ),
-      
+
       // Ubuntu-style input decoration
-      inputDecorationTheme: yaruLight.inputDecorationTheme.copyWith(
+      inputDecorationTheme: baseTheme.inputDecorationTheme.copyWith(
         filled: true,
-        fillColor: yaruLight.colorScheme.surface,
+        fillColor: baseTheme.colorScheme.surface,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: yaruLight.colorScheme.outline),
+          borderSide: BorderSide(color: baseTheme.colorScheme.outline),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: yaruLight.colorScheme.outline),
+          borderSide: BorderSide(color: baseTheme.colorScheme.outline),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
@@ -141,47 +144,50 @@ class _JotDownAppState extends State<JotDownApp> {
   }
 
   ThemeData _buildUbuntuDarkTheme() {
-    return yaruDark.copyWith(
+    // Use Yaru dark theme as base
+    final baseTheme = yaruDark;
+
+    return baseTheme.copyWith(
       // Use Ubuntu's signature colors for dark theme
-      colorScheme: yaruDark.colorScheme.copyWith(
+      colorScheme: baseTheme.colorScheme.copyWith(
         primary: const Color(0xFFE95420), // Ubuntu orange
         secondary: const Color(0xFF77216F), // Ubuntu purple
       ),
-      
+
       // Ubuntu-style dark app bar
-      appBarTheme: yaruDark.appBarTheme.copyWith(
+      appBarTheme: baseTheme.appBarTheme.copyWith(
         backgroundColor: const Color(0xFF2C2C2C), // Ubuntu dark header
         foregroundColor: Colors.white,
         elevation: 0,
         centerTitle: false,
       ),
-      
+
       // Ubuntu-style dark floating action button
-      floatingActionButtonTheme: yaruDark.floatingActionButtonTheme.copyWith(
+      floatingActionButtonTheme: baseTheme.floatingActionButtonTheme.copyWith(
         backgroundColor: const Color(0xFFE95420),
         foregroundColor: Colors.white,
         elevation: 2,
       ),
-      
+
       // Ubuntu-style dark cards
-      cardTheme: yaruDark.cardTheme.copyWith(
+      cardTheme: baseTheme.cardTheme.copyWith(
         elevation: 1,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
         ),
       ),
-      
+
       // Ubuntu-style dark input decoration
-      inputDecorationTheme: yaruDark.inputDecorationTheme.copyWith(
+      inputDecorationTheme: baseTheme.inputDecorationTheme.copyWith(
         filled: true,
-        fillColor: yaruDark.colorScheme.surface,
+        fillColor: baseTheme.colorScheme.surface,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: yaruDark.colorScheme.outline),
+          borderSide: BorderSide(color: baseTheme.colorScheme.outline),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: yaruDark.colorScheme.outline),
+          borderSide: BorderSide(color: baseTheme.colorScheme.outline),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),

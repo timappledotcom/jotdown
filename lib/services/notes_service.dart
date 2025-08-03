@@ -8,14 +8,15 @@ import 'encryption_service.dart';
 
 class NotesService {
   static const String _notesKey = 'notes_data';
-  static const String _notesFileName = 'notes.json';
+  static const String _indexFileName = 'index.json';
+  static const String _appDir = 'jotdown';
 
   Future<List<Note>> loadNotes(AppSettings settings, [String? password]) async {
     try {
       if (settings.storageLocation == 'shared_preferences') {
         return await _loadFromSharedPreferences(settings, password);
       } else {
-        return await _loadFromFile(settings, password);
+        return await _loadFromFlatFiles(settings, password);
       }
     } catch (e) {
       print('Error loading notes: $e');
@@ -32,7 +33,9 @@ class NotesService {
       if (settings.storageLocation == 'shared_preferences') {
         await _saveToSharedPreferences(notes, settings, password);
       } else {
-        await _saveToFile(notes, settings, password);
+        // For flat file storage, we don't save all notes at once
+        // Individual notes are saved via saveNote method
+        await _updateIndex(notes, settings);
       }
     } catch (e) {
       print('Error saving notes: $e');
@@ -82,103 +85,153 @@ class NotesService {
     if (settings.encryptionEnabled && password != null) {
       // For shared preferences, we store the salt separately
       String? salt = prefs.getString('encryption_salt');
-      if (salt == null) {
-        salt = EncryptionService.generateSalt();
-        await prefs.setString('encryption_salt', salt);
+      if (salt != null) {
+        notesJson = EncryptionService.encrypt(notesJson, password, salt);
       }
-      notesJson = EncryptionService.encrypt(notesJson, password, salt);
     }
 
     await prefs.setString(_notesKey, notesJson);
   }
 
-  Future<List<Note>> _loadFromFile(
+  Future<List<Note>> _loadFromFlatFiles(
     AppSettings settings, [
     String? password,
   ]) async {
-    final filePath = await _getNotesFilePath(settings);
-    final file = File(filePath);
+    final dataDir = await _getDataDirectory(settings);
+    final indexFile = File('${dataDir.path}/$_indexFileName');
 
-    if (!await file.exists()) {
+    if (!await indexFile.exists()) {
       return [];
     }
 
-    String content = await file.readAsString();
+    String indexContent = await indexFile.readAsString();
 
-    // Decrypt if encryption is enabled
+    // Decrypt index if encryption is enabled
     if (settings.encryptionEnabled && password != null) {
       try {
-        // For file storage, we store salt in a separate file
-        final saltFile = File('$filePath.salt');
-        if (!await saltFile.exists()) {
-          throw Exception('Encryption salt file not found');
-        }
-        final salt = await saltFile.readAsString();
-        content = EncryptionService.decrypt(content, password, salt);
+        final salt = await _getSalt(settings);
+        indexContent = EncryptionService.decrypt(indexContent, password, salt);
       } catch (e) {
-        throw Exception('Failed to decrypt notes: $e');
+        throw Exception('Failed to decrypt index: $e');
       }
     }
 
-    final List<dynamic> notesList = json.decode(content);
-    return notesList.map((json) => Note.fromJson(json)).toList();
+    final List<dynamic> indexData = json.decode(indexContent);
+    final notes = <Note>[];
+
+    for (final item in indexData) {
+      final noteFile = File('${dataDir.path}/${item['filename']}');
+      if (await noteFile.exists()) {
+        String content = await noteFile.readAsString();
+
+        // Decrypt note content if encryption is enabled
+        if (settings.encryptionEnabled && password != null) {
+          try {
+            final salt = await _getSalt(settings);
+            content = EncryptionService.decrypt(content, password, salt);
+          } catch (e) {
+            print('Warning: Failed to decrypt note ${item['id']}: $e');
+            continue; // Skip this note if decryption fails
+          }
+        }
+
+        final note = Note(
+          id: item['id'],
+          title: item['title'],
+          content: content,
+          createdAt: DateTime.parse(item['createdAt']),
+          updatedAt: DateTime.parse(item['updatedAt']),
+        );
+        notes.add(note);
+      }
+    }
+
+    return notes;
   }
 
-  Future<void> _saveToFile(
+  Future<void> _updateIndex(
     List<Note> notes,
-    AppSettings settings, [
-    String? password,
-  ]) async {
-    final filePath = await _getNotesFilePath(settings);
-    final file = File(filePath);
+    AppSettings settings,
+  ) async {
+    final dataDir = await _getDataDirectory(settings);
+    final indexFile = File('${dataDir.path}/$_indexFileName');
 
-    // Ensure directory exists
-    await file.parent.create(recursive: true);
+    // Create index data
+    final indexData = notes
+        .map((note) => {
+              'id': note.id,
+              'title': note.title,
+              'filename': '${note.id}.md',
+              'createdAt': note.createdAt.toIso8601String(),
+              'updatedAt': note.updatedAt.toIso8601String(),
+            })
+        .toList();
 
-    String notesJson = json.encode(notes.map((note) => note.toJson()).toList());
+    // Sort by updated date (newest first)
+    indexData.sort((a, b) => DateTime.parse(b['updatedAt'] as String)
+        .compareTo(DateTime.parse(a['updatedAt'] as String)));
 
-    // Encrypt if encryption is enabled
-    if (settings.encryptionEnabled && password != null) {
-      // For file storage, we store salt in a separate file
-      final saltFile = File('$filePath.salt');
-      String? salt;
+    String indexJson = json.encode(indexData);
 
-      if (await saltFile.exists()) {
-        salt = await saltFile.readAsString();
-      } else {
-        salt = EncryptionService.generateSalt();
-        await saltFile.writeAsString(salt);
-      }
-
-      notesJson = EncryptionService.encrypt(notesJson, password, salt);
+    // Encrypt index if encryption is enabled
+    if (settings.encryptionEnabled) {
+      // Note: This method is called without password, so we skip encryption here
+      // Individual note saving handles encryption
     }
 
-    await file.writeAsString(notesJson);
+    await indexFile.writeAsString(indexJson);
   }
 
-  Future<String> _getNotesFilePath(AppSettings settings) async {
-    String directoryPath;
+  Future<Directory> _getDataDirectory(AppSettings settings) async {
+    Directory dataDir;
 
     switch (settings.storageLocation) {
       case 'documents':
         final documentsDir = await getApplicationDocumentsDirectory();
-        directoryPath = '${documentsDir.path}/jotdown';
+        dataDir = Directory('${documentsDir.path}/$_appDir');
         break;
       case 'home':
         final homeDir = Platform.environment['HOME'] ?? '';
-        directoryPath = '$homeDir/jotdown';
+        dataDir = Directory('$homeDir/$_appDir');
         break;
       case 'custom':
-        directoryPath = settings.customPath;
+        if (settings.customPath.isEmpty) {
+          throw Exception('Custom path not set');
+        }
+        dataDir = Directory('${settings.customPath}/$_appDir');
         break;
-      default:
-        // Fallback to documents
-        final documentsDir = await getApplicationDocumentsDirectory();
-        directoryPath = '${documentsDir.path}/jotdown';
+      default: // 'shared_preferences' or fallback
+        final homeDir = Platform.environment['HOME'] ?? '';
+        dataDir = Directory('$homeDir/.local/share/$_appDir');
         break;
     }
 
-    return '$directoryPath/$_notesFileName';
+    if (!await dataDir.exists()) {
+      await dataDir.create(recursive: true);
+    }
+    return dataDir;
+  }
+
+  Future<String> _getSalt(AppSettings settings) async {
+    if (settings.storageLocation == 'shared_preferences') {
+      final prefs = await SharedPreferences.getInstance();
+      String? salt = prefs.getString('encryption_salt');
+      if (salt == null) {
+        salt = EncryptionService.generateSalt();
+        await prefs.setString('encryption_salt', salt);
+      }
+      return salt;
+    } else {
+      final dataDir = await _getDataDirectory(settings);
+      final saltFile = File('${dataDir.path}/encryption.salt');
+      if (await saltFile.exists()) {
+        return await saltFile.readAsString();
+      } else {
+        final salt = EncryptionService.generateSalt();
+        await saltFile.writeAsString(salt);
+        return salt;
+      }
+    }
   }
 
   Future<void> saveNote(
@@ -187,13 +240,50 @@ class NotesService {
     AppSettings settings, [
     String? password,
   ]) async {
-    final index = existingNotes.indexWhere((n) => n.id == note.id);
-    if (index != -1) {
-      existingNotes[index] = note;
+    if (settings.storageLocation == 'shared_preferences') {
+      // Use the old method for shared preferences
+      final index = existingNotes.indexWhere((n) => n.id == note.id);
+      if (index != -1) {
+        existingNotes[index] = note;
+      } else {
+        existingNotes.add(note);
+      }
+      await saveNotes(existingNotes, settings, password);
     } else {
-      existingNotes.add(note);
+      // Save individual file for flat file storage
+      await _saveFlatFile(note, settings, password);
+
+      // Update the existing notes list
+      final index = existingNotes.indexWhere((n) => n.id == note.id);
+      if (index != -1) {
+        existingNotes[index] = note;
+      } else {
+        existingNotes.add(note);
+      }
+
+      // Update index
+      await _updateIndex(existingNotes, settings);
     }
-    await saveNotes(existingNotes, settings, password);
+  }
+
+  Future<void> _saveFlatFile(
+    Note note,
+    AppSettings settings,
+    String? password,
+  ) async {
+    final dataDir = await _getDataDirectory(settings);
+    final filename = '${note.id}.md';
+    final noteFile = File('${dataDir.path}/$filename');
+
+    String content = note.content;
+
+    // Encrypt content if encryption is enabled
+    if (settings.encryptionEnabled && password != null) {
+      final salt = await _getSalt(settings);
+      content = EncryptionService.encrypt(content, password, salt);
+    }
+
+    await noteFile.writeAsString(content);
   }
 
   Future<void> deleteNote(
@@ -202,8 +292,30 @@ class NotesService {
     AppSettings settings, [
     String? password,
   ]) async {
-    existingNotes.removeWhere((note) => note.id == noteId);
-    await saveNotes(existingNotes, settings, password);
+    if (settings.storageLocation == 'shared_preferences') {
+      // Use the old method for shared preferences
+      existingNotes.removeWhere((note) => note.id == noteId);
+      await saveNotes(existingNotes, settings, password);
+    } else {
+      // Delete individual file for flat file storage
+      await _deleteFlatFile(noteId, settings);
+
+      // Update the existing notes list
+      existingNotes.removeWhere((note) => note.id == noteId);
+
+      // Update index
+      await _updateIndex(existingNotes, settings);
+    }
+  }
+
+  Future<void> _deleteFlatFile(String noteId, AppSettings settings) async {
+    final dataDir = await _getDataDirectory(settings);
+    final filename = '$noteId.md';
+    final noteFile = File('${dataDir.path}/$filename');
+
+    if (await noteFile.exists()) {
+      await noteFile.delete();
+    }
   }
 
   Future<bool> migrateNotes(

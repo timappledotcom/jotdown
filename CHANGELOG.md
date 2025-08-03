@@ -5,7 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-# Changelog
+## [0.2.1] - 2025-08-02
+
+### Added
+- **Latest Yaru Theme**: Upgraded to Yaru 8.1.0 for authentic Ubuntu appearance
+- **Enhanced Flat File Storage**: Individual .md files for maximum compatibility
+- **External Tool Integration**: Open notes in VS Code, Vim, or any Markdown editor
+- **Improved File System Integration**: Browse notes directly in file manager
+
+### Changed
+- **Flutter Upgrade**: Updated to Flutter 3.32.8 with Dart 3.8.1
+- **Performance Improvements**: Faster app startup and note loading
+- **Better Ubuntu Integration**: Enhanced system theme detection and native appearance
+- **Dependency Updates**: All dependencies updated to latest compatible versions
+
+### Fixed
+- **Critical Null Safety**: Fixed null safety issues in encryption services
+- **Type Safety**: Improved type casting for DateTime operations
+- **Theme Switching**: Resolved edge cases in light/dark mode transitions
+- **CLI Argument Parsing**: Enhanced command-line interface reliability
+
+### Technical
+- **Build System**: Improved Linux build support with proper GTK integration
+- **Code Quality**: Better error handling and crash prevention
+- **Architecture**: Cleaner separation between GUI and CLI components
+- **Documentation**: Comprehensive migration guides and technical documentation
 
 ## [0.1.2] - 2025-07-19
 
