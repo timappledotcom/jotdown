@@ -36,8 +36,8 @@ class SettingsService {
 
   /// Get available storage locations for the current platform
   Future<List<String>> getAvailableStorageLocations() async {
-    final locations = <String>['shared_preferences'];
-    
+    final locations = <String>[];
+
     // Add documents folder option
     try {
       await getApplicationDocumentsDirectory();
@@ -45,7 +45,7 @@ class SettingsService {
     } catch (e) {
       print('Documents directory not available: $e');
     }
-    
+
     // Add home directory option (Linux/macOS)
     if (Platform.isLinux || Platform.isMacOS) {
       final homeDir = Platform.environment['HOME'];
@@ -53,18 +53,16 @@ class SettingsService {
         locations.add('home');
       }
     }
-    
+
     // Always add custom option
     locations.add('custom');
-    
+
     return locations;
   }
 
   /// Get display name for storage location
   String getStorageLocationDisplayName(String location) {
     switch (location) {
-      case 'shared_preferences':
-        return 'App Data';
       case 'documents':
         return 'Documents Folder';
       case 'home':
@@ -79,8 +77,6 @@ class SettingsService {
   /// Get the actual storage path for a given location
   Future<String> getStoragePath(AppSettings settings) async {
     switch (settings.storageLocation) {
-      case 'shared_preferences':
-        return 'Stored in app data (no file path)';
       case 'documents':
         try {
           final documentsDir = await getApplicationDocumentsDirectory();

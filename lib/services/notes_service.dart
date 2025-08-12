@@ -99,31 +99,28 @@ class NotesService {
   ]) async {
     final dataDir = await _getDataDirectory(settings);
     final indexFile = File('${dataDir.path}/$_indexFileName');
-
-    if (!await indexFile.exists()) {
-      return [];
-    }
-
-    String indexContent = await indexFile.readAsString();
-
-    // Decrypt index if encryption is enabled
-    if (settings.encryptionEnabled && password != null) {
-      try {
-        final salt = await _getSalt(settings);
-        indexContent = EncryptionService.decrypt(indexContent, password, salt);
-      } catch (e) {
-        throw Exception('Failed to decrypt index: $e');
+    List<dynamic> indexData = [];
+    if (await indexFile.exists()) {
+      String indexContent = await indexFile.readAsString();
+      // Decrypt index if encryption is enabled
+      if (settings.encryptionEnabled && password != null) {
+        try {
+          final salt = await _getSalt(settings);
+          indexContent = EncryptionService.decrypt(indexContent, password, salt);
+        } catch (e) {
+          throw Exception('Failed to decrypt index: $e');
+        }
       }
+      indexData = json.decode(indexContent);
     }
-
-    final List<dynamic> indexData = json.decode(indexContent);
     final notes = <Note>[];
-
+    final indexedFilenames = indexData.map((item) => item['filename'] as String).toSet();
+    
+    // Add notes from index
     for (final item in indexData) {
       final noteFile = File('${dataDir.path}/${item['filename']}');
       if (await noteFile.exists()) {
         String content = await noteFile.readAsString();
-
         // Decrypt note content if encryption is enabled
         if (settings.encryptionEnabled && password != null) {
           try {
@@ -134,7 +131,6 @@ class NotesService {
             continue; // Skip this note if decryption fails
           }
         }
-
         final note = Note(
           id: item['id'],
           title: item['title'],
@@ -145,7 +141,61 @@ class NotesService {
         notes.add(note);
       }
     }
-
+    
+    // Only scan for new files if this is the first load or index is empty
+    if (indexData.isEmpty) {
+      final files = dataDir.listSync().whereType<File>().where((f) => 
+        f.path.endsWith('.md') && 
+        !f.path.contains('index.json') &&
+        !indexedFilenames.contains(f.uri.pathSegments.last)
+      ).toList();
+      
+      bool hasNewFiles = false;
+      for (final file in files) {
+        try {
+          final filename = file.uri.pathSegments.last;
+          if (!indexedFilenames.contains(filename)) {
+            final content = await file.readAsString();
+            final id = DateTime.now().millisecondsSinceEpoch.toString();
+            final now = DateTime.now();
+            final firstLine = content.split('\n').first.trim();
+            final title = firstLine.isNotEmpty ? firstLine.replaceAll(RegExp(r'^#+\s*'), '') : filename.replaceAll('.md', '');
+            final newFilename = '$id.md';
+            final newFilePath = '${dataDir.path}/$newFilename';
+            
+            // Only proceed if the new file doesn't already exist
+            if (!File(newFilePath).existsSync()) {
+              await File(newFilePath).writeAsString(content);
+              await file.delete();
+              
+              final note = Note(
+                id: id,
+                title: title,
+                content: content,
+                createdAt: now,
+                updatedAt: now,
+              );
+              notes.add(note);
+              indexData.add({
+                'id': id,
+                'title': title,
+                'filename': newFilename,
+                'createdAt': now.toIso8601String(),
+                'updatedAt': now.toIso8601String(),
+              });
+              hasNewFiles = true;
+            }
+          }
+        } catch (e) {
+          print('Warning: Failed to import file ${file.path}: $e');
+        }
+      }
+      
+      // Save updated index only if new files were added
+      if (hasNewFiles) {
+        await _updateIndex(notes, settings);
+      }
+    }
     return notes;
   }
 

@@ -29,7 +29,7 @@ class _NotesListScreenState extends State<NotesListScreen>
   AppSettings _settings = AppSettings();
   bool _isLoading = true;
   String _searchQuery = '';
-  List<String> _selectedTags = []; // Changed to support hierarchical tag selection
+  final List<String> _selectedTags = []; // Changed to support hierarchical tag selection
   bool _showSidebar = true; // Show sidebar by default
   Timer? _refreshTimer;
   DateTime? _lastModified;
@@ -800,7 +800,7 @@ class _NotesListScreenState extends State<NotesListScreen>
                   final isDark =
                       Theme.of(context).brightness == Brightness.dark;
                   final backgroundColor = isDark
-                      ? Theme.of(context).colorScheme.surfaceVariant
+                      ? Theme.of(context).colorScheme.surfaceContainerHighest
                       : Theme.of(context).primaryColor.withOpacity(0.1);
                   final borderColor = isDark
                       ? Theme.of(context).colorScheme.outline
@@ -1085,7 +1085,7 @@ class _NotesListScreenState extends State<NotesListScreen>
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceVariant,
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
               border: Border(
                 top: BorderSide(
                   color: Theme.of(context).colorScheme.outline.withOpacity(0.2),

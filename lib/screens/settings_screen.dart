@@ -801,6 +801,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildStorageOption(String location) {
+    if (location == 'shared_preferences') return const SizedBox.shrink();
     return Card(
       child: RadioListTile<String>(
         title: Text(_settingsService.getStorageLocationDisplayName(location)),
@@ -809,10 +810,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           builder: (context, snapshot) {
             String description;
             switch (location) {
-              case 'shared_preferences':
-                description =
-                    'Stored securely in app data. No file access needed.';
-                break;
               case 'documents':
                 description =
                     'Stored in your Documents folder for easy access.';
